@@ -1,0 +1,22 @@
+{
+ "real_frauds": 46,
+ "unlabelled": [],
+ "by_attack_type": {
+  "payroll": 7,
+  "ceo_wire": 6,
+  "bank_change": 12,
+  "fake_invoice_or_thread": 16,
+  "gift_or_p2p": 3,
+  "recon": 2
+ },
+ "stopped_by": {
+  "bank_change": "RED: bank details differ from the account you paid before",
+  "fake_invoice_or_thread": "AMBER/RED: the attacker's account is one you have never paid (or differs from the real supplier's)",
+  "ceo_wire": "AMBER: first payment to a new account",
+  "payroll": "out of scope for supplier invoices; same rule applies to an employee's changed salary account (HR mode)",
+  "gift_or_p2p": "out of scope: gift cards / Venmo, not an invoice payment",
+  "recon": "no payment requested yet; caught later when bank details are sent"
+ },
+ "invoice_or_wire_payment_frauds": 34,
+ "caught_at_payment_by_history_check": "34/34 (by construction: the payee account is changed or new)"
+}

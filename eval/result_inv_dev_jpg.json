@@ -1,0 +1,136 @@
+{
+ "result": {
+  "set": "inv_dev",
+  "format": "jpg",
+  "n": 150,
+  "field_accuracy": {
+   "supplier_name": 0.9933,
+   "supplier_trn": 0.98,
+   "iban": 0.9667,
+   "invoice_number": 0.98,
+   "invoice_date": 1.0,
+   "subtotal": 0.9867,
+   "vat": 0.9867,
+   "total": 0.98
+  },
+  "all_fields_correct": 0.8933,
+  "iban_wrong_but_flagged": 5,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": [
+  [
+   "inv_0013.pdf",
+   "iban",
+   "AE009044880586838614914",
+   "AE090448805868386149142"
+  ],
+  [
+   "inv_0042.pdf",
+   "iban",
+   "AE100242407071961478981",
+   "AE100242407071961789812"
+  ],
+  [
+   "inv_0046.pdf",
+   "supplier_name",
+   "Nakheel View JT Solutions FZ-LLC",
+   "Nakheel View IT Solutions FZ-LLC"
+  ],
+  [
+   "inv_0049.pdf",
+   "supplier_trn",
+   "None",
+   "100293808052356"
+  ],
+  [
+   "inv_0050.pdf",
+   "invoice_number",
+   "INV/2026/22993",
+   "INV/2026/22903"
+  ],
+  [
+   "inv_0061.pdf",
+   "total",
+   "8672.54",
+   "88672.54"
+  ],
+  [
+   "inv_0062.pdf",
+   "subtotal",
+   "9519.15",
+   "59519.15"
+  ],
+  [
+   "inv_0063.pdf",
+   "vat",
+   "411771.65",
+   "11771.65"
+  ],
+  [
+   "inv_0065.pdf",
+   "subtotal",
+   "739.04",
+   "11739.04"
+  ],
+  [
+   "inv_0087.pdf",
+   "iban",
+   "None",
+   "AE640411606265986921833"
+  ],
+  [
+   "inv_0114.pdf",
+   "iban",
+   "AE229358165892977986477",
+   "AE220358165892977986477"
+  ],
+  [
+   "inv_0118.pdf",
+   "supplier_trn",
+   "106895477078609",
+   "100895477078609"
+  ],
+  [
+   "inv_0118.pdf",
+   "invoice_number",
+   "None",
+   "No. 9012"
+  ],
+  [
+   "inv_0118.pdf",
+   "total",
+   "3677.54",
+   "53677.54"
+  ],
+  [
+   "inv_0128.pdf",
+   "total",
+   "3665.33",
+   "83665.33"
+  ],
+  [
+   "inv_0137.pdf",
+   "iban",
+   "None",
+   "AE740336181152364648366"
+  ],
+  [
+   "inv_0138.pdf",
+   "vat",
+   "57452.77",
+   "5452.77"
+  ],
+  [
+   "inv_0141.pdf",
+   "supplier_trn",
+   "None",
+   "100076655799041"
+  ],
+  [
+   "inv_0141.pdf",
+   "invoice_number",
+   "TL83469",
+   "TI-83469"
+  ]
+ ]
+}

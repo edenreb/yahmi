@@ -1,0 +1,15 @@
+[
+ {
+  "file": "inv_0001.pdf",
+  "template": "ar_eastern",
+  "supplier_name": "Rimal Building Materials FZE",
+  "supplier_trn": "100806998339762",
+  "customer_trn": "100600070561489",
+  "iban": "AE890407071248107569007",
+  "invoice_number": "INV-4503",
+  "invoice_date": "23/01/2026",
+  "subtotal": "55785.00",
+  "vat": "2789.25",
+  "total": "58574.25"
+ }
+]

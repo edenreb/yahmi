@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yahmi</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root { --bg:#f4f6f5; --card:#fff; --ink:#14201c; --muted:#5a6b65; --line:#d9e1de; --red:#c62f2f; --red-bg:#fbe9e9; --amber:#a76a00; --amber-bg:#fdf3df; --green:#18794e; --green-bg:#e3f4ec; --accent:#0f5f4b;
+  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif }
+@media (prefers-color-scheme: dark) { :root { --bg:#0e1513; --card:#16201d; --ink:#e5eeea; --muted:#94a7a0; --line:#26342f; --red:#ff7b7b; --red-bg:#3a1c1c; --amber:#f2b64f; --amber-bg:#3a2d12; --green:#5fd39b; --green-bg:#163327; --accent:#5fd3b3; color-scheme: dark } }
+* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--body); padding:24px max(16px, env(safe-area-inset-left)) 64px }
+.wrap { max-width:760px; margin:0 auto; display:grid; gap:16px }
+h1 { font:800 34px/1.05 var(--display); margin:0 } .sub { color:var(--muted); margin:6px 0 0 }
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; display:grid; gap:12px }
+label { font-weight:600; font-size:13px } textarea, input[type=file], input[type=text] { width:100%; font:14px var(--body); padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink) }
+textarea { min-height:110px } button { font:600 15px var(--body); padding:12px 18px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; justify-self:start }
+button:disabled { opacity:.6 } .row { display:grid; gap:6px }
+.verdict { border-radius:14px; padding:18px; font:800 26px/1.1 var(--display) } .verdict small { display:block; font:500 14px var(--body); margin-top:6px }
+.stop { background:var(--red-bg); color:var(--red) } .check { background:var(--amber-bg); color:var(--amber) } .ok { background:var(--green-bg); color:var(--green) }
+.f { display:grid; grid-template-columns:14px 1fr; gap:10px; padding:10px 0; border-top:1px solid var(--line) } .f:first-child { border-top:0 }
+.dot { width:10px; height:10px; border-radius:50%; margin-top:6px } .dot.red { background:var(--red) } .dot.amber { background:var(--amber) } .dot.green { background:var(--green) } .dot.info { background:var(--muted) }
+.src { color:var(--muted); font-size:12px } details summary { cursor:pointer; color:var(--muted) } pre { white-space:pre-wrap; font-size:12px }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>Yahmi</h1><p class="sub">Check a supplier invoice before you pay it. Every warning shows the record it came from.</p></header>
+  <form class="card" id="checkForm">
+    <div class="row"><label for="biz">Your business</label><input type="text" id="biz" name="business" value="" placeholder="e.g. Your Company LLC"></div>
+    <div class="row"><label for="inv">Invoice (PDF or photo)</label><input type="file" id="inv" name="invoice" accept=".pdf,image/*" required></div>
+    <div class="row"><label for="em">The email it came with (optional, paste it in)</label><textarea id="em" name="email_text" placeholder="From: ...&#10;Reply-To: ...&#10;Subject: ...&#10;&#10;Dear Accounts team, ..."></textarea></div>
+    <button id="go" type="submit">Check before paying</button>
+  </form>
+  <div id="out"></div>
+  <details class="card"><summary>Set up: add invoices you have already paid</summary>
+    <form id="histForm" class="row">
+      <input type="hidden" name="business" id="histBiz">
+      <label for="hist">Past invoices (select several)</label><input type="file" id="hist" name="files" multiple accept=".pdf,image/*">
+      <label for="dom">Email domain these suppliers normally use (optional)</label><input type="text" id="dom" name="email_domain">
+      <button type="submit">Add to my history</button><div id="histOut" class="src"></div>
+    </form>
+  </details>
+</div>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TITLE = { stop: ["Stop. Don't pay yet.", "Verify with the supplier on a number you already trust."], check: ["Check before paying.", "Some details need confirming."], ok: ["Looks safe to pay.", "All checks passed."] };
+document.getElementById("checkForm").addEventListener("submit", async e => {
+  e.preventDefault(); const b = document.getElementById("go"); b.disabled = true; b.textContent = "Checking...";
+  try {
+    const r = await fetch("/api/check", { method: "POST", body: new FormData(e.target) }); const j = await r.json();
+    const [t, s] = TITLE[j.verdict];
+    document.getElementById("out").innerHTML = `<div class="verdict ${j.verdict}">${t}<small>${s}</small></div>
+      <div class="card">${j.findings.map(f => `<div class="f"><span class="dot ${f.level}"></span><div>${esc(f.message)}<div class="src">${esc(f.source)}</div></div></div>`).join("")}</div>
+      <details class="card"><summary>What we read from the invoice (${esc(j.read_method)})</summary><pre>${esc(JSON.stringify(j.invoice, null, 1))}</pre></details>`;
+  } catch (err) { document.getElementById("out").innerHTML = `<div class="card">Could not check this file: ${esc(err.message)}</div>`; }
+  b.disabled = false; b.textContent = "Check before paying";
+});
+document.getElementById("histForm").addEventListener("submit", async e => {
+  e.preventDefault(); document.getElementById("histBiz").value = document.getElementById("biz").value; const r = await fetch("/api/history", { method: "POST", body: new FormData(e.target) }); const j = await r.json();
+  document.getElementById("histOut").textContent = `Added ${j.added.length} supplier payment(s) to your history.`;
+});
+</script>
+</body>
+</html>

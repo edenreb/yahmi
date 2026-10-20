@@ -1,0 +1,93 @@
+{
+ "threshold": 0.5,
+ "train": {
+  "real_emails": 13997,
+  "synthetic_emails": 3000
+ },
+ "heldout_dataset_all": {
+  "n": 3500,
+  "fraud": 1305,
+  "legit": 2195,
+  "caught": "1281/1305",
+  "false_alarms": "15/2195",
+  "roc_auc": 0.9994
+ },
+ "heldout_dataset_payment_related": {
+  "n": 149,
+  "fraud": 81,
+  "legit": 68,
+  "caught": "81/81",
+  "false_alarms": "1/68",
+  "roc_auc": 0.9996
+ },
+ "real_world_published": {
+  "n": 12,
+  "fraud": 8,
+  "legit": 4,
+  "caught": "6/8",
+  "false_alarms": "4/4",
+  "roc_auc": 0.4688
+ },
+ "real_world_items": [
+  {
+   "label": "fraud",
+   "score": 0.783,
+   "start": "(no subject) Hello [REMOVED], I changed my bank and I will l"
+  },
+  {
+   "label": "fraud",
+   "score": 0.561,
+   "start": "ACH Payment Attention Please confirm the receipt of my messa"
+  },
+  {
+   "label": "fraud",
+   "score": 0.965,
+   "start": " Dear Mr. customer, Greetings. As per our below mail and out"
+  },
+  {
+   "label": "fraud",
+   "score": 0.749,
+   "start": "Re: FW : Payment Confirmation Dear Sandra,  Due to the issue"
+  },
+  {
+   "label": "fraud",
+   "score": 0.294,
+   "start": "Urgent Crystal, did you get my email from earlier? I am abou"
+  },
+  {
+   "label": "fraud",
+   "score": 0.841,
+   "start": " Due to the audit, we can't use the existing account we alwa"
+  },
+  {
+   "label": "fraud",
+   "score": 0.949,
+   "start": " As we have a top secret M&A deal, we need funds. Send money"
+  },
+  {
+   "label": "fraud",
+   "score": 0.487,
+   "start": " Hi, We\u2019ve changed banks. Please update our payment details "
+  },
+  {
+   "label": "legit",
+   "score": 0.515,
+   "start": "Bank details have not changed We are aware that a fraudulent"
+  },
+  {
+   "label": "legit",
+   "score": 0.828,
+   "start": "URGENT Security Alert - Verify Any Bank Change Request To Al"
+  },
+  {
+   "label": "legit",
+   "score": 0.842,
+   "start": "Important Security Notice: Beware of Fraudulent Emails Claim"
+  },
+  {
+   "label": "legit",
+   "score": 0.752,
+   "start": "Cybercrime and fraud warning Please beware of emails or othe"
+  }
+ ]
+}

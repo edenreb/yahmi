@@ -1,0 +1,64 @@
+{
+ "n": 82,
+ "thresholds_fixed_before_test": true,
+ "amber_or_red": {
+  "caught": "23/41",
+  "false": "4/41"
+ },
+ "red": {
+  "caught": "19/41",
+  "false": "1/41"
+ },
+ "auc": 0.781,
+ "english_model_before": {
+  "amber_false": "28/41",
+  "red_false": "3/41"
+ },
+ "by_type": {
+  "fraud|sms_payment": [
+   22,
+   12,
+   9
+  ],
+  "fraud|fake_invoice": [
+   3,
+   1,
+   1
+  ],
+  "fraud|bank_change": [
+   1,
+   1,
+   1
+  ],
+  "fraud|other": [
+   9,
+   5,
+   4
+  ],
+  "fraud|gift_card": [
+   5,
+   4,
+   4
+  ],
+  "legit|legit_bank_change": [
+   2,
+   0,
+   0
+  ],
+  "legit|legit_invoice": [
+   5,
+   3,
+   1
+  ],
+  "legit|legit_payment_notice": [
+   34,
+   1,
+   0
+  ],
+  "fraud|ceo_wire": [
+   1,
+   0,
+   0
+  ]
+ }
+}

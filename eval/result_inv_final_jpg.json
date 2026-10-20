@@ -1,0 +1,160 @@
+{
+ "result": {
+  "set": "inv_final",
+  "format": "jpg",
+  "n": 160,
+  "field_accuracy": {
+   "supplier_name": 0.9875,
+   "supplier_trn": 0.9938,
+   "iban": 0.95,
+   "invoice_number": 0.9563,
+   "invoice_date": 1.0,
+   "subtotal": 0.9812,
+   "vat": 0.9875,
+   "total": 1.0
+  },
+  "all_fields_correct": 0.8938,
+  "iban_wrong_but_flagged": 8,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": [
+  [
+   "inv_0001.pdf",
+   "iban",
+   "AE670444312426520836290",
+   "AE670444312126520836290"
+  ],
+  [
+   "inv_0015.pdf",
+   "iban",
+   "None",
+   "AE630404930545586804232"
+  ],
+  [
+   "inv_0015.pdf",
+   "invoice_number",
+   "INv-44g865",
+   "INV-44865"
+  ],
+  [
+   "inv_0021.pdf",
+   "invoice_number",
+   "TII-41695",
+   "TI-41695"
+  ],
+  [
+   "inv_0041.pdf",
+   "supplier_name",
+   "Biue Creek Facilities Management LLC",
+   "Blue Creek Facilities Management LLC"
+  ],
+  [
+   "inv_0041.pdf",
+   "iban",
+   "AE320264111472562436726",
+   "AE320264111725624367266"
+  ],
+  [
+   "inv_0041.pdf",
+   "invoice_number",
+   "INV/2026/91.446",
+   "INV/2026/91446"
+  ],
+  [
+   "inv_0053.pdf",
+   "iban",
+   "None",
+   "AE290411854665847561395"
+  ],
+  [
+   "inv_0058.pdf",
+   "subtotal",
+   "475036.32",
+   "175036.32"
+  ],
+  [
+   "inv_0063.pdf",
+   "invoice_number",
+   "None",
+   "No. 43882"
+  ],
+  [
+   "inv_0076.pdf",
+   "invoice_number",
+   "9363",
+   "No. 9369"
+  ],
+  [
+   "inv_0076.pdf",
+   "subtotal",
+   "427268.40",
+   "127268.40"
+  ],
+  [
+   "inv_0078.pdf",
+   "iban",
+   "AE440245963731862954120",
+   "AE440245963731862954122"
+  ],
+  [
+   "inv_0079.pdf",
+   "iban",
+   "None",
+   "AE060404473864280582539"
+  ],
+  [
+   "inv_0079.pdf",
+   "invoice_number",
+   "TI-39346",
+   "TI-88346"
+  ],
+  [
+   "inv_0096.pdf",
+   "invoice_number",
+   "INV/2026/855393",
+   "INV/2026/85539"
+  ],
+  [
+   "inv_0096.pdf",
+   "subtotal",
+   "626.38",
+   "105626.38"
+  ],
+  [
+   "inv_0099.pdf",
+   "vat",
+   "72218.93",
+   "7278.93"
+  ],
+  [
+   "inv_0100.pdf",
+   "supplier_name",
+   "Pear! Coast Building Materials Go. LLC",
+   "Pearl Coast Building Materials Co. LLC"
+  ],
+  [
+   "inv_0105.pdf",
+   "vat",
+   "422.45",
+   "422.15"
+  ],
+  [
+   "inv_0128.pdf",
+   "iban",
+   "AE080030061335801086469",
+   "AE080030061395801086469"
+  ],
+  [
+   "inv_0133.pdf",
+   "iban",
+   "None",
+   "AE020419648062262145137"
+  ],
+  [
+   "inv_0159.pdf",
+   "supplier_trn",
+   "100036185279335",
+   "100036185279835"
+  ]
+ ]
+}

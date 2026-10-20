@@ -1,0 +1,23 @@
+{
+ "model": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+ "n": 82,
+ "fraud": 41,
+ "lr": {
+  "auc": 0.781,
+  "0.5": "caught 26/41, false 6/41",
+  "0.62": "caught 23/41, false 4/41",
+  "0.8": "caught 19/41, false 1/41"
+ },
+ "gbm": {
+  "auc": 0.541,
+  "0.5": "caught 22/41, false 16/41",
+  "0.62": "caught 18/41, false 12/41",
+  "0.8": "caught 12/41, false 9/41"
+ },
+ "mean": {
+  "auc": 0.694,
+  "0.5": "caught 25/41, false 11/41",
+  "0.62": "caught 19/41, false 5/41",
+  "0.8": "caught 14/41, false 2/41"
+ }
+}

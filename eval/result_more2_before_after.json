@@ -1,0 +1,38 @@
+{
+ "n": 158,
+ "fraud": 81,
+ "before": {
+  "auc": 0.874,
+  "0.62": "caught 48/81, false 9/77",
+  "0.8": "caught 24/81, false 4/77",
+  "amber_by_type": {
+   "bank_change": "11/15",
+   "ceo_wire": "2/3",
+   "fake_invoice": "16/28",
+   "gift_card": "4/5",
+   "invoice_thread": "4/6",
+   "legit_bank_change": "2/5",
+   "legit_invoice": "2/43",
+   "legit_payment_notice": "5/29",
+   "other": "5/13",
+   "payroll": "6/11"
+  }
+ },
+ "after": {
+  "auc": 0.908,
+  "0.62": "caught 54/81, false 7/77",
+  "0.8": "caught 34/81, false 2/77",
+  "amber_by_type": {
+   "bank_change": "11/15",
+   "ceo_wire": "2/3",
+   "fake_invoice": "17/28",
+   "gift_card": "5/5",
+   "invoice_thread": "4/6",
+   "legit_bank_change": "2/5",
+   "legit_invoice": "1/43",
+   "legit_payment_notice": "4/29",
+   "other": "7/13",
+   "payroll": "8/11"
+  }
+ }
+}

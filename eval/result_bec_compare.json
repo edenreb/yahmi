@@ -1,0 +1,87 @@
+{
+ "emb_lr_mixed": {
+  "auc": 0.866,
+  "at_<=10%_false_alarms": [
+   0.72,
+   0.599,
+   0.088,
+   "127/212",
+   "12/136"
+  ]
+ },
+ "emb_lr_real_only": {
+  "auc": 0.832,
+  "at_<=10%_false_alarms": [
+   0.71,
+   0.448,
+   0.096,
+   "95/212",
+   "13/136"
+  ]
+ },
+ "tfidf_real_only": {
+  "auc": 0.86,
+  "at_<=10%_false_alarms": [
+   0.77,
+   0.552,
+   0.088,
+   "117/212",
+   "12/136"
+  ]
+ },
+ "emb_gbm_mixed": {
+  "auc": 0.908,
+  "at_<=10%_false_alarms": [
+   0.75,
+   0.712,
+   0.096,
+   "151/212",
+   "13/136"
+  ]
+ },
+ "ensemble": {
+  "auc": 0.916,
+  "at_<=10%_false_alarms": [
+   0.6,
+   0.755,
+   0.096,
+   "160/212",
+   "13/136"
+  ]
+ },
+ "ensemble2_gbm_tfidf_lr": {
+  "auc": 0.927,
+  "at_<=10%_false_alarms": [
+   0.62,
+   0.764,
+   0.096,
+   "162/212",
+   "13/136"
+  ]
+ },
+ "ensemble3_plus_cues": {
+  "auc": 0.917,
+  "at_<=10%_false_alarms": [
+   0.56,
+   0.75,
+   0.096,
+   "159/212",
+   "13/136"
+  ]
+ },
+ "e3_by_type_at_best": {
+  "(old set)": "35/72 flagged",
+  "bank_change": "6/9 flagged",
+  "ceo_wire": "19/26 flagged",
+  "fake_invoice": "20/28 flagged",
+  "gift_card": "43/46 flagged",
+  "invoice_thread": "5/11 flagged",
+  "legit_bank_change": "1/24 flagged",
+  "legit_invoice": "1/22 flagged",
+  "legit_other": "3/7 flagged",
+  "legit_payment_notice": "5/57 flagged",
+  "other": "9/18 flagged",
+  "payroll": "21/23 flagged",
+  "recon": "4/5 flagged"
+ }
+}

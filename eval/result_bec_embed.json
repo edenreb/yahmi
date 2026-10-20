@@ -1,0 +1,41 @@
+{
+ "heldout_dataset": {
+  "caught": "173/188",
+  "false_alarms": "17/312",
+  "auc": 0.98
+ },
+ "real_world_embed": {
+  "thr_0.5": {
+   "caught": "30/46",
+   "false_alarms": "8/26",
+   "auc": 0.656
+  },
+  "thr_0.6": {
+   "caught": "23/46",
+   "false_alarms": "6/26",
+   "auc": 0.656
+  },
+  "thr_0.7": {
+   "caught": "17/46",
+   "false_alarms": "5/26",
+   "auc": 0.656
+  }
+ },
+ "real_world_embed_plus_cues": {
+  "thr_0.5": {
+   "caught": "35/46",
+   "false_alarms": "8/26",
+   "auc": 0.728
+  },
+  "thr_0.6": {
+   "caught": "31/46",
+   "false_alarms": "6/26",
+   "auc": 0.728
+  },
+  "thr_0.7": {
+   "caught": "28/46",
+   "false_alarms": "5/26",
+   "auc": 0.728
+  }
+ }
+}

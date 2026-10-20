@@ -1,0 +1,91 @@
+{
+ "n": 70,
+ "fraud": 45,
+ "legit": 25,
+ "sources": {
+  "www.cpapracticeadvisor.com": 2,
+  "support.exabytes.sg": 1,
+  "oig.usaid.gov": 1,
+  "secure.in.gov": 1,
+  "www.bk.mufg.jp": 2,
+  "www.bitdefender.com": 1,
+  "purcosa.co.za": 1,
+  "www.epic-crystal.com": 1,
+  "nmi.nl": 1,
+  "www.jmw.co.uk": 1,
+  "razorpay.com": 3,
+  "woculus.com": 5,
+  "dodopayments.com": 1,
+  "www.highradius.com": 5,
+  "www.sayanchor.com": 6,
+  "abnormal.ai": 38
+ },
+ "A_wording_model": {
+  "thr_0.4": {
+   "caught": "27/45",
+   "false_alarms": "7/25",
+   "auc": 0.684
+  },
+  "thr_0.5": {
+   "caught": "22/45",
+   "false_alarms": "7/25",
+   "auc": 0.684
+  },
+  "thr_0.6": {
+   "caught": "14/45",
+   "false_alarms": "6/25",
+   "auc": 0.684
+  }
+ },
+ "B_cue_rules": {
+  "thr_0.4": {
+   "caught": "22/45",
+   "false_alarms": "0/25",
+   "auc": 0.804
+  },
+  "thr_0.5": {
+   "caught": "20/45",
+   "false_alarms": "0/25",
+   "auc": 0.804
+  },
+  "thr_0.6": {
+   "caught": "18/45",
+   "false_alarms": "0/25",
+   "auc": 0.804
+  }
+ },
+ "C_combined": {
+  "thr_0.4": {
+   "caught": "32/45",
+   "false_alarms": "7/25",
+   "auc": 0.792
+  },
+  "thr_0.5": {
+   "caught": "26/45",
+   "false_alarms": "6/25",
+   "auc": 0.792
+  },
+  "thr_0.6": {
+   "caught": "22/45",
+   "false_alarms": "5/25",
+   "auc": 0.792
+  }
+ },
+ "D_learned_cv_by_source": {
+  "thr_0.4": {
+   "caught": "30/45",
+   "false_alarms": "9/25",
+   "auc": 0.643
+  },
+  "thr_0.5": {
+   "caught": "26/45",
+   "false_alarms": "8/25",
+   "auc": 0.643
+  },
+  "thr_0.6": {
+   "caught": "21/45",
+   "false_alarms": "4/25",
+   "auc": 0.643
+  }
+ }
+}

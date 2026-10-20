@@ -1,0 +1,397 @@
+{
+ "source": "UAE IBAN bank identifiers from the schwifty 2026.7.3 registry (compiled from the CBUAE IBAN bank code list); merger notes added from public reporting. Verify against the CBUAE register of licensed financial institutions before production.",
+ "banks": {
+  "001": {
+   "name": "Central Bank of UAE",
+   "bic": "CBAUAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "002": {
+   "name": "The Royal Bank Of Scotland N",
+   "bic": "ABNAAEADXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Exited the UAE market"
+  },
+  "003": {
+   "name": "Abu Dhabi Commercial Bank (ADCB)",
+   "bic": "ADCBAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "004": {
+   "name": "Al Ahli Bank Of Kuwait K",
+   "bic": "ABKKAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "005": {
+   "name": "Rafidain Bank",
+   "bic": "RAFBAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "007": {
+   "name": "Arab African International Bank",
+   "bic": "ARAIAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "008": {
+   "name": "Al Masraf (Arab Bank for Investment and Foreign Trade)",
+   "bic": "ABINAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "009": {
+   "name": "Arab Bank",
+   "bic": "ARABAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "011": {
+   "name": "Bank of Baroda",
+   "bic": "BARBAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "012": {
+   "name": "Bank of Sharjah",
+   "bic": "SHARAEASXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "015": {
+   "name": "BANQUE MISR",
+   "bic": "BMISAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "016": {
+   "name": "Credit Agricole Corporate and Investment Bank",
+   "bic": "BSUIAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "018": {
+   "name": "BNP Paribas",
+   "bic": "BNPAAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "019": {
+   "name": "Barclays Bank",
+   "bic": "BARCAEADXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "UAE retail business sold to ADCB (2014)"
+  },
+  "020": {
+   "name": "HSBC Bank Middle East",
+   "bic": "BBMEAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "021": {
+   "name": "Citibank NA",
+   "bic": "CITIAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "022": {
+   "name": "Commercial Bank International PSC",
+   "bic": "CLBIAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "023": {
+   "name": "Commercial Bank of Dubai",
+   "bic": "CBDUAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "024": {
+   "name": "Dubai Islamic Bank",
+   "bic": "DUIBAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "025": {
+   "name": "El Nilein Bank",
+   "bic": "NILBAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "026": {
+   "name": "Emirates NBD",
+   "bic": "EBILAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "027": {
+   "name": "First Gulf Bank",
+   "bic": "FGBMAEAAXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Merged into First Abu Dhabi Bank (2017); FAB uses code 035"
+  },
+  "028": {
+   "name": "Habib Bank Limited",
+   "bic": "HABBAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "029": {
+   "name": "Habib Bank AG Zurich",
+   "bic": "HBZUAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "030": {
+   "name": "Investbank PSC",
+   "bic": "IBTFAEASXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "031": {
+   "name": "Janata Bank",
+   "bic": "JANBAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "033": {
+   "name": "Mashreq",
+   "bic": "BOMLAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "034": {
+   "name": "Emirates Islamic Bank PJSC",
+   "bic": "MEBLAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "035": {
+   "name": "First Abu Dhabi Bank (formerly National Bank of Abu Dhabi)",
+   "bic": "NBADAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "038": {
+   "name": "National Bank Of Fujairah",
+   "bic": "NBFUAEAFXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "040": {
+   "name": "RAKBANK (National Bank of Ras Al Khaimah)",
+   "bic": "NRAKAEAKXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "041": {
+   "name": "Sharjah Islamic Bank",
+   "bic": "NBSHAEASXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "042": {
+   "name": "National Bank Of Umm Al Qaiwain",
+   "bic": "UMMQAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "043": {
+   "name": "Industrial and Commercial Bank of China",
+   "bic": "ICBKAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "044": {
+   "name": "Standard Chartered Bank",
+   "bic": "SCBLAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "045": {
+   "name": "Union National Bank",
+   "bic": "UNBEAEAAXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Merged into ADCB (2019); ADCB uses code 003"
+  },
+  "046": {
+   "name": "United Arab Bank",
+   "bic": "UARBAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "047": {
+   "name": "United Bank Ltd",
+   "bic": "UNILAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "049": {
+   "name": "Deutsche Bank",
+   "bic": "DEUTAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "050": {
+   "name": "Abu Dhabi Islamic Bank",
+   "bic": "ABDIAEADXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "051": {
+   "name": "Dubai Bank",
+   "bic": "DBXPAEADXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Merged into Emirates NBD group (2011)"
+  },
+  "052": {
+   "name": "Noor Islamic Bank",
+   "bic": "NISLAEADXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Merged into Dubai Islamic Bank (2020); DIB uses code 024"
+  },
+  "053": {
+   "name": "Al Hilal Bank",
+   "bic": "HLALAEAAXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Acquired by ADCB (2019)"
+  },
+  "055": {
+   "name": "SAMBA Financial Group",
+   "bic": "SAMBAEADXXX",
+   "type": "bank",
+   "status": "legacy",
+   "note": "Merged into Saudi National Bank (2021)"
+  },
+  "057": {
+   "name": "Ajman Bank",
+   "bic": "AJMNAEAJXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "092": {
+   "name": "GULF INTERNATIONAL BANK",
+   "bic": "GULFAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "093": {
+   "name": "INTESA SANPAOLO",
+   "bic": "BCITAEABXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "113": {
+   "name": "SIRAJ FINANCE PJSC",
+   "bic": "SRAJAEAAXXX",
+   "type": "bank",
+   "status": "active",
+   "note": ""
+  },
+  "206": {
+   "name": "Al Ansari Exchange",
+   "bic": "ALANAEAAXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "215": {
+   "name": "Al Fardan Exchange",
+   "bic": "FEXEAEAAXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "216": {
+   "name": "Al Fuad Exchange",
+   "bic": "ALFXAEADXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "252": {
+   "name": "Emirates India International Exchange",
+   "bic": "EIIEAEADXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "267": {
+   "name": "Lari Exchange",
+   "bic": "LAEEAEAAXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "291": {
+   "name": "UAE Exchange Center LLC",
+   "bic": "UAEXAEAAXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "293": {
+   "name": "Universal Exchange Centre",
+   "bic": "UECEAEADXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  },
+  "294": {
+   "name": "Wall Street Exchange Centre LLC",
+   "bic": "WSEEAEADXXX",
+   "type": "exchange house",
+   "status": "active",
+   "note": ""
+  }
+ }
+}

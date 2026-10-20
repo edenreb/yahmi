@@ -1,0 +1,21 @@
+{
+ "result": {
+  "set": "inv_dev",
+  "format": "pdf",
+  "n": 150,
+  "field_accuracy": {
+   "supplier_name": 1.0,
+   "supplier_trn": 1.0,
+   "iban": 1.0,
+   "invoice_number": 1.0,
+   "invoice_date": 1.0,
+   "subtotal": 1.0,
+   "vat": 1.0,
+   "total": 1.0
+  },
+  "all_fields_correct": 1.0,
+  "iban_wrong_but_flagged": 0,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": []
+}

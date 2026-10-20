@@ -1,0 +1,208 @@
+{
+ "result": {
+  "set": "inv_blind2",
+  "format": "jpg",
+  "n": 120,
+  "field_accuracy": {
+   "supplier_name": 0.9917,
+   "supplier_trn": 0.95,
+   "iban": 0.95,
+   "invoice_number": 0.9583,
+   "invoice_date": 0.9917,
+   "subtotal": 0.9583,
+   "vat": 0.975,
+   "total": 0.9667
+  },
+  "all_fields_correct": 0.8,
+  "iban_wrong_but_flagged": 6,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": [
+  [
+   "inv_0002.pdf",
+   "supplier_trn",
+   "None",
+   "100270093831551"
+  ],
+  [
+   "inv_0015.pdf",
+   "subtotal",
+   "111799.27",
+   "112420.28"
+  ],
+  [
+   "inv_0015.pdf",
+   "vat",
+   "621.01",
+   "5621.01"
+  ],
+  [
+   "inv_0015.pdf",
+   "total",
+   "112420.28",
+   "118041.29"
+  ],
+  [
+   "inv_0019.pdf",
+   "invoice_date",
+   "None",
+   "12/11/2026"
+  ],
+  [
+   "inv_0027.pdf",
+   "supplier_trn",
+   "None",
+   "100992552538467"
+  ],
+  [
+   "inv_0036.pdf",
+   "vat",
+   "7906.82",
+   "7906.81"
+  ],
+  [
+   "inv_0037.pdf",
+   "invoice_number",
+   "TII-55227",
+   "TI-55227"
+  ],
+  [
+   "inv_0039.pdf",
+   "supplier_trn",
+   "None",
+   "100512514865771"
+  ],
+  [
+   "inv_0043.pdf",
+   "supplier_trn",
+   "None",
+   "100779926591824"
+  ],
+  [
+   "inv_0046.pdf",
+   "invoice_number",
+   "None",
+   "No. 34241"
+  ],
+  [
+   "inv_0049.pdf",
+   "supplier_trn",
+   "None",
+   "100046930383897"
+  ],
+  [
+   "inv_0057.pdf",
+   "invoice_number",
+   "None",
+   "INV/2026/76435"
+  ],
+  [
+   "inv_0058.pdf",
+   "iban",
+   "None",
+   "AE750446954685682135720"
+  ],
+  [
+   "inv_0058.pdf",
+   "subtotal",
+   "None",
+   "91970.44"
+  ],
+  [
+   "inv_0058.pdf",
+   "vat",
+   "None",
+   "4598.52"
+  ],
+  [
+   "inv_0058.pdf",
+   "total",
+   "91970.44",
+   "96568.96"
+  ],
+  [
+   "inv_0060.pdf",
+   "iban",
+   "None",
+   "AE640032714065931267138"
+  ],
+  [
+   "inv_0064.pdf",
+   "subtotal",
+   "-6697.55",
+   "146634.16"
+  ],
+  [
+   "inv_0064.pdf",
+   "total",
+   "634.16",
+   "153965.87"
+  ],
+  [
+   "inv_0067.pdf",
+   "iban",
+   "None",
+   "AE590413838527674018513"
+  ],
+  [
+   "inv_0082.pdf",
+   "subtotal",
+   "717003.30",
+   "77003.30"
+  ],
+  [
+   "inv_0092.pdf",
+   "supplier_trn",
+   "None",
+   "100433759217147"
+  ],
+  [
+   "inv_0106.pdf",
+   "supplier_name",
+   "Pearl Coast Technical Services F2-LLC",
+   "Pearl Coast Technical Services FZ-LLC"
+  ],
+  [
+   "inv_0108.pdf",
+   "iban",
+   "None",
+   "AE520249497464828339037"
+  ],
+  [
+   "inv_0111.pdf",
+   "invoice_number",
+   "71777",
+   "77777"
+  ],
+  [
+   "inv_0113.pdf",
+   "iban",
+   "AEL30440729268162966445",
+   "AE130440729268162966445"
+  ],
+  [
+   "inv_0115.pdf",
+   "invoice_number",
+   "None",
+   "INV/2026/39140"
+  ],
+  [
+   "inv_0117.pdf",
+   "subtotal",
+   "5017.27",
+   "5281.34"
+  ],
+  [
+   "inv_0117.pdf",
+   "total",
+   "5281.34",
+   "5545.41"
+  ],
+  [
+   "inv_0119.pdf",
+   "iban",
+   "None",
+   "AE550245682564352250901"
+  ]
+ ]
+}

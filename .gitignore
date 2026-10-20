@@ -1,0 +1,33 @@
+# secrets and local state
+.env
+.env.*
+data/.yahmi_key
+*.db
+*.sqlite
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/
+.venv/
+
+# large or third-party datasets (download/rebuild locally; see eval/ext_*/README.md)
+eval/ext_*/
+data/dl/
+eval/emb_cache*.npz
+eval/inv_*/*.jpg
+eval/inv_*/*.pdf
+eval/cv_preds*.npz
+eval/*.npy
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# third-party email text and models trained on it (kept privately)
+data/bec_*.json
+data/real_invoices_uae/
+models/*.joblib
+models/archive/
+models/candidates/

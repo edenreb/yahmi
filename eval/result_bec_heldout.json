@@ -1,0 +1,25 @@
+{
+ "train_n": 13997,
+ "test": [
+  {
+   "subset": "all held-out emails",
+   "n": 3500,
+   "fraud": 1305,
+   "precision": 0.9893,
+   "recall": 0.9877,
+   "f1": 0.9885,
+   "false_alarm_rate_on_legit": 0.0064,
+   "roc_auc": 0.9995
+  },
+  {
+   "subset": "held-out emails about invoices, payments or bank details",
+   "n": 149,
+   "fraud": 81,
+   "precision": 0.9878,
+   "recall": 1.0,
+   "f1": 0.9939,
+   "false_alarm_rate_on_legit": 0.0147,
+   "roc_auc": 0.9998
+  }
+ ]
+}

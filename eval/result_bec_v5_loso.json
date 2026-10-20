@@ -1,0 +1,31 @@
+{
+ "n_real": 622,
+ "fraud": 355,
+ "legit": 267,
+ "sources": 333,
+ "auc": 0.872,
+ "thr_0.3": {
+  "caught": "337/355",
+  "false_alarms": "139/267"
+ },
+ "thr_0.4": {
+  "caught": "317/355",
+  "false_alarms": "98/267"
+ },
+ "thr_0.5": {
+  "caught": "307/355",
+  "false_alarms": "71/267"
+ },
+ "thr_0.6": {
+  "caught": "273/355",
+  "false_alarms": "47/267"
+ },
+ "thr_0.7": {
+  "caught": "232/355",
+  "false_alarms": "29/267"
+ },
+ "thr_0.8": {
+  "caught": "188/355",
+  "false_alarms": "14/267"
+ }
+}

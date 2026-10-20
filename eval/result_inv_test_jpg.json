@@ -1,0 +1,142 @@
+{
+ "result": {
+  "set": "inv_test",
+  "format": "jpg",
+  "n": 150,
+  "field_accuracy": {
+   "supplier_name": 0.98,
+   "supplier_trn": 1.0,
+   "iban": 0.9467,
+   "invoice_number": 0.9933,
+   "invoice_date": 0.9933,
+   "subtotal": 0.9933,
+   "vat": 0.9667,
+   "total": 0.9933
+  },
+  "all_fields_correct": 0.8733,
+  "iban_wrong_but_flagged": 8,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": [
+  [
+   "inv_0004.pdf",
+   "iban",
+   "None",
+   "AE160507074572547876746"
+  ],
+  [
+   "inv_0017.pdf",
+   "iban",
+   "None",
+   "AE590243893397364938206"
+  ],
+  [
+   "inv_0023.pdf",
+   "vat",
+   "4517.71",
+   "1517.71"
+  ],
+  [
+   "inv_0024.pdf",
+   "vat",
+   "37773.79",
+   "3773.79"
+  ],
+  [
+   "inv_0034.pdf",
+   "iban",
+   "None",
+   "AE530032931507906136597"
+  ],
+  [
+   "inv_0036.pdf",
+   "vat",
+   "388.33",
+   "5388.33"
+  ],
+  [
+   "inv_0040.pdf",
+   "iban",
+   "AE580340794483347236483",
+   "AE580340794483347236489"
+  ],
+  [
+   "inv_0046.pdf",
+   "invoice_date",
+   "1/07/2026",
+   "11/07/2026"
+  ],
+  [
+   "inv_0050.pdf",
+   "supplier_name",
+   "Gult Bridge Electromechanical FZ-LLC",
+   "Gulf Bridge Electromechanical FZ-LLC"
+  ],
+  [
+   "inv_0052.pdf",
+   "vat",
+   "49.12",
+   "549.12"
+  ],
+  [
+   "inv_0053.pdf",
+   "iban",
+   "AE180241630474082246100",
+   "AE180241630474082216100"
+  ],
+  [
+   "inv_0063.pdf",
+   "invoice_number",
+   "None",
+   "78434"
+  ],
+  [
+   "inv_0070.pdf",
+   "subtotal",
+   "151668.44",
+   "151668.41"
+  ],
+  [
+   "inv_0079.pdf",
+   "supplier_name",
+   "Blue Creek Electromechanical Lsts\u20ac",
+   "Blue Creek Electromechanical L.L.C"
+  ],
+  [
+   "inv_0080.pdf",
+   "supplier_name",
+   "Golden Sands Catering Supplies Co. Lic",
+   "Golden Sands Catering Supplies Co. LLC"
+  ],
+  [
+   "inv_0080.pdf",
+   "iban",
+   "AE670268068114825178709",
+   "AE670268068114825178701"
+  ],
+  [
+   "inv_0095.pdf",
+   "iban",
+   "AE960576698337537144423",
+   "AE980576698337537144423"
+  ],
+  [
+   "inv_0122.pdf",
+   "iban",
+   "None",
+   "AE270234547244755925621"
+  ],
+  [
+   "inv_0131.pdf",
+   "vat",
+   "4221.28",
+   "1221.28"
+  ],
+  [
+   "inv_0140.pdf",
+   "total",
+   "427537.25",
+   "127537.25"
+  ]
+ ]
+}

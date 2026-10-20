@@ -1,0 +1,238 @@
+{
+ "result": {
+  "set": "inv_fresh",
+  "format": "jpg",
+  "n": 120,
+  "field_accuracy": {
+   "supplier_name": 0.9833,
+   "supplier_trn": 0.9667,
+   "iban": 0.9167,
+   "invoice_number": 0.9833,
+   "invoice_date": 1.0,
+   "subtotal": 0.8833,
+   "vat": 0.9833,
+   "total": 0.9833
+  },
+  "all_fields_correct": 0.7583,
+  "iban_wrong_but_flagged": 10,
+  "iban_wrong_and_silent": 0
+ },
+ "errors": [
+  [
+   "inv_0005.pdf",
+   "supplier_name",
+   "Biue Creek Trading FZE",
+   "Blue Creek Trading FZE"
+  ],
+  [
+   "inv_0006.pdf",
+   "total",
+   "3960.52",
+   "83960.52"
+  ],
+  [
+   "inv_0028.pdf",
+   "invoice_number",
+   "TJ-37468",
+   "TI-37468"
+  ],
+  [
+   "inv_0037.pdf",
+   "subtotal",
+   "493.78",
+   "93493.78"
+  ],
+  [
+   "inv_0038.pdf",
+   "supplier_trn",
+   "None",
+   "100799496653791"
+  ],
+  [
+   "inv_0038.pdf",
+   "iban",
+   "None",
+   "AE930339692882111049316"
+  ],
+  [
+   "inv_0044.pdf",
+   "subtotal",
+   "660.16",
+   "32660.16"
+  ],
+  [
+   "inv_0046.pdf",
+   "subtotal",
+   "144.32",
+   "87144.32"
+  ],
+  [
+   "inv_0047.pdf",
+   "invoice_number",
+   "None",
+   "TI-1162"
+  ],
+  [
+   "inv_0048.pdf",
+   "iban",
+   "None",
+   "AE720572615516299768712"
+  ],
+  [
+   "inv_0048.pdf",
+   "subtotal",
+   "21552.71",
+   "121552.71"
+  ],
+  [
+   "inv_0049.pdf",
+   "subtotal",
+   "264.28",
+   "123264.28"
+  ],
+  [
+   "inv_0051.pdf",
+   "iban",
+   "None",
+   "AE450243371683456353472"
+  ],
+  [
+   "inv_0052.pdf",
+   "iban",
+   "None",
+   "AE900244955718277534737"
+  ],
+  [
+   "inv_0060.pdf",
+   "supplier_trn",
+   "None",
+   "100295145790448"
+  ],
+  [
+   "inv_0061.pdf",
+   "subtotal",
+   "5216.91",
+   "105216.91"
+  ],
+  [
+   "inv_0067.pdf",
+   "iban",
+   "None",
+   "AE890444293993217238591"
+  ],
+  [
+   "inv_0068.pdf",
+   "subtotal",
+   "179.27",
+   "50179.27"
+  ],
+  [
+   "inv_0071.pdf",
+   "iban",
+   "None",
+   "AE140359520942962215102"
+  ],
+  [
+   "inv_0073.pdf",
+   "supplier_trn",
+   "None",
+   "100536074465069"
+  ],
+  [
+   "inv_0073.pdf",
+   "iban",
+   "None",
+   "AE890032360264943655113"
+  ],
+  [
+   "inv_0077.pdf",
+   "subtotal",
+   "612.23",
+   "177612.23"
+  ],
+  [
+   "inv_0091.pdf",
+   "iban",
+   "AE2103497943g9g95074847",
+   "AE210349794389825074847"
+  ],
+  [
+   "inv_0091.pdf",
+   "subtotal",
+   "492.43",
+   "95492.43"
+  ],
+  [
+   "inv_0099.pdf",
+   "subtotal",
+   "None",
+   "55154.37"
+  ],
+  [
+   "inv_0099.pdf",
+   "vat",
+   "None",
+   "2757.72"
+  ],
+  [
+   "inv_0099.pdf",
+   "total",
+   "55154.37",
+   "57912.09"
+  ],
+  [
+   "inv_0100.pdf",
+   "supplier_name",
+   "Ai Noor Interiors Est.",
+   "Al Noor Interiors Est."
+  ],
+  [
+   "inv_0102.pdf",
+   "iban",
+   "AE005050715761542551301",
+   "AE050507157615425513010"
+  ],
+  [
+   "inv_0103.pdf",
+   "subtotal",
+   "5759.14",
+   "55759.14"
+  ],
+  [
+   "inv_0104.pdf",
+   "subtotal",
+   "892.02",
+   "55892.02"
+  ],
+  [
+   "inv_0105.pdf",
+   "supplier_trn",
+   "None",
+   "100469859466085"
+  ],
+  [
+   "inv_0110.pdf",
+   "subtotal",
+   "848.50",
+   "75848.50"
+  ],
+  [
+   "inv_0112.pdf",
+   "subtotal",
+   "364.65",
+   "26364.65"
+  ],
+  [
+   "inv_0112.pdf",
+   "vat",
+   "27318.23",
+   "1318.23"
+  ],
+  [
+   "inv_0115.pdf",
+   "iban",
+   "AE830352767406747289L95",
+   "AE830352767406747289195"
+  ]
+ ]
+}
