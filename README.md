@@ -1,4 +1,7 @@
-# Yahmi
+<p align="center">
+  <img width="300" height="91" alt="yahmi_logo_ar" src="https://github.com/user-attachments/assets/e91d3c39-85df-4a54-a39b-f5157b8e6042" />
+</p>
+
 
 Check a supplier invoice before you pay it. A UAE small business forwards an invoice (PDF or photo) and,
 optionally, the email it came with. Yahmi answers **Stop**, **Check** or **OK**, and every warning names
