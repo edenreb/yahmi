@@ -1,0 +1,117 @@
+{
+ "result": {
+  "set": "ext_sparrow",
+  "format": "jpg",
+  "n": 80,
+  "field_accuracy": {
+   "supplier_name": 0.9605,
+   "iban": 0.8302,
+   "invoice_number": 1.0,
+   "invoice_date": 1.0,
+   "subtotal": 1.0,
+   "vat": 1.0,
+   "total": 0.9867
+  },
+  "labelled": {
+   "supplier_name": 76,
+   "supplier_trn": 0,
+   "iban": 53,
+   "invoice_number": 75,
+   "invoice_date": 76,
+   "subtotal": 76,
+   "vat": 76,
+   "total": 75
+  },
+  "all_fields_correct": 0.8375,
+  "iban_labels_failing_checksum_not_scored": 23,
+  "iban_wrong_but_flagged": 8,
+  "iban_wrong_and_silent": 1
+ },
+ "silent_iban_cases": [
+  [
+   "sp_0112.pdf",
+   "GB76VSKM38236855870683",
+   "GB76V5KM38236855870683"
+  ]
+ ],
+ "errors": [
+  [
+   "sp_0000.pdf",
+   "iban",
+   "None",
+   "GB81LZWO32519172531418"
+  ],
+  [
+   "sp_0013.pdf",
+   "total",
+   "157929.37",
+   "1579929.37"
+  ],
+  [
+   "sp_0021.pdf",
+   "iban",
+   "None",
+   "GB91DIDO06197597108680"
+  ],
+  [
+   "sp_0022.pdf",
+   "supplier_name",
+   "George, Casey and Harris",
+   "907-77-8965"
+  ],
+  [
+   "sp_0053.pdf",
+   "iban",
+   "None",
+   "GB03VHUR92534869762657"
+  ],
+  [
+   "sp_0059.pdf",
+   "iban",
+   "None",
+   "GB05ZUCN48071007458396"
+  ],
+  [
+   "sp_0065.pdf",
+   "iban",
+   "None",
+   "GB90LFJV64626371402095"
+  ],
+  [
+   "sp_0077.pdf",
+   "iban",
+   "None",
+   "GB44IJGO64103154190692"
+  ],
+  [
+   "sp_0090.pdf",
+   "supplier_name",
+   "Cunningham-Richmond",
+   "Cunningnam.lchmond"
+  ],
+  [
+   "sp_0098.pdf",
+   "supplier_name",
+   "Thomas-Mitchell",
+   "Thomas-Mitchel"
+  ],
+  [
+   "sp_0105.pdf",
+   "iban",
+   "None",
+   "GB05FZSB29082242149094"
+  ],
+  [
+   "sp_0109.pdf",
+   "iban",
+   "None",
+   "GB02NXHR06400921861370"
+  ],
+  [
+   "sp_0112.pdf",
+   "iban",
+   "GB76VSKM38236855870683",
+   "GB76V5KM38236855870683"
+  ]
+ ]
+}
