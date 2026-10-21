@@ -1,5 +1,6 @@
 <p align="center">
-  <img width="300" height="91" alt="yahmi_logo_ar" src="https://github.com/user-attachments/assets/e91d3c39-85df-4a54-a39b-f5157b8e6042" />
+  <img width="300" height="91" alt="yahmi_logo_ar" src="web/assets/logo-ar.png"/><br><br>
+  Yahmi it before you pay it.
 </p>
 
 
