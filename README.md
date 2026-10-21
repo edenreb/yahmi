@@ -53,6 +53,24 @@ python3 tests/fixtures/make_fixtures.py                 # rebuild the test invoi
 
 The first run downloads the small embedding model (BAAI/bge-small-en-v1.5, about 130 MB).
 
+## Official TRN check (FTA, needs API access)
+
+Yahmi compares the supplier name on an invoice with the name the Federal Tax Authority has registered for its TRN, using the
+FTA `validateTRNDetails_FTAX` service on the UAE API Marketplace. It needs an approved Marketplace application. Set
+`YAHMI_FTA_API_KEY` (the `GW-APIKey`), `YAHMI_FTA_CLIENT_ID` and `YAHMI_FTA_CLIENT_SECRET` in the environment; never commit them.
+Without them the verdict shows "not connected yet" and nothing is guessed. Results are cached for 24 hours and calls are capped at
+450 a day (the service allows 500). `YAHMI_FTA_TRN_IN=body` sends the TRN as a JSON body instead of a query parameter.
+Name match: 85 or more is green, 60 to 84 is amber, below 60 is red. Code: `yahmi/registry.py`; tests use a fake gateway.
+
+### Demo without API access (simulated gateway)
+
+Until the FTA approves access, `python3 tools/run_simulated_demo.py` starts a **simulated** FTA gateway (`tools/fake_fta_gateway.py`, four invented
+companies) and Yahmi together. Yahmi's real client code talks to it, so the whole path runs: login, request, parsing, name comparison.
+Try `tests/fixtures/wrong_trn.pdf` (the supplier's name with a TRN the simulated register holds for a different company: red) and
+`tests/fixtures/genuine_new.pdf` (green). Any gateway other than `api.gsb.government.ae` is treated as simulated: results are prefixed
+"SIMULATION:" and cite "SIMULATED registry (... NOT the Federal Tax Authority)". Never present them as FTA data. For the real service set
+`YAHMI_FTA_API_KEY`, `YAHMI_FTA_CLIENT_ID` and `YAHMI_FTA_CLIENT_SECRET` and leave `YAHMI_FTA_BASE_URL` / `YAHMI_FTA_TOKEN_URL` unset.
+
 ## WhatsApp setup (Meta WhatsApp Cloud API)
 
 1. Create a Meta developer app with the WhatsApp product and get a test phone number.
