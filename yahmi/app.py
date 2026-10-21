@@ -7,14 +7,17 @@ import tempfile
 import joblib
 from fastapi import FastAPI, File, Form, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from .email_checks import check_email, domain_of, parse as parse_email
 from .extract import extract
 from .memory import Memory, supplier_id
+from .registry import FtaTrnClient, check_trn_registry
 from .rules import check_invoice
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app = FastAPI(title="Yahmi")
+FTA = FtaTrnClient()  # official TRN-to-name check; reports "not connected" until the API credentials are set
 MEM = Memory(os.environ.get("YAHMI_DB", os.path.join(ROOT, "data", "yahmi.db")))
 BEC_PATH = os.path.join(ROOT, "models", "bec_final.joblib")
 BEC = None
@@ -78,6 +81,7 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     """Core check used by the web app and WhatsApp."""
     inv = extract(path)
     findings = check_invoice(inv)
+    findings += check_trn_registry(inv.supplier_name, inv.supplier_trn, FTA)
     if inv.iban and not inv.extra.get("iban_confident"):
         findings.insert(0, _f("iban_read", "amber", "We could not read the IBAN with certainty. Please type it in to confirm.", "Yahmi reader"))
     em = parse_email(email_text) if email_text.strip() else None
@@ -138,6 +142,14 @@ def _f(check, level, message, source):
 
 from .whatsapp import router as wa_router  # noqa: E402
 app.include_router(wa_router)
+
+
+app.mount("/assets", StaticFiles(directory=os.path.join(ROOT, "web", "assets")), name="assets")
+
+
+@app.get("/landing")
+def landing():
+    return FileResponse(os.path.join(ROOT, "web", "landing.html"))
 
 
 @app.get("/")
