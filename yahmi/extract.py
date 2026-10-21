@@ -10,12 +10,13 @@ import re
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
 
-from .rules import Invoice, iban_valid
+from .rules import IBAN_LENGTHS, Invoice, iban_valid
 
-SUFFIX = r"(?:L\.?L\.?C\.?|FZ-?LLC|FZE|FZCO|Est\.?|Establishment|Co\.?\s*LLC|PJSC|Trading|Company)"
+SUFFIX = (r"(?:L\.?L\.?C\.?|FZ-?LLC|FZE|FZCO|Est\.?|Establishment|Co\.?\s*LLC|PJSC|Trading|Company"
+          r"|Pty\.?\s*Ltd\.?|Sdn\.?\s*Bhd\.?|Pvt\.?\s*Ltd\.?|Ltd\.?|Limited|Inc\.?|Incorporated|Corp\.?|Corporation|LLP|GmbH|PLC|S\.A\.|B\.V\.|S\.?R\.?L\.?|SARL)")
 SUB_KEYS = ["sub total", "subtotal", "taxable", "net amount", "excl", "before vat", "amount before"]
-VAT_KEYS = ["vat", "value added tax", "tax"]
-TOT_KEYS = ["grand total", "total due", "amount payable", "balance due", "incl", "total"]
+VAT_KEYS = ["vat", "value added tax", "gst", "sales tax", "tax"]
+TOT_KEYS = ["grand total", "total due", "amount due", "amount payable", "balance due", "incl", "total"]
 NOT_VAT = ["tax invoice", "tax reg", "registration", "incl", "excl", "before", "taxable", "trn"]
 
 
@@ -83,9 +84,27 @@ def _num(s: str) -> Decimal | None:
         return None
 
 
+# An amount with two decimals, in any common layout: 1,234.56  1.234,56  1 234.56  1'234.56  1234,56  (12.00)  -12.00
+_AMT = re.compile(r"(?<![\w.,'])(\(?-?)\s?((?:\d{1,3}(?:[ \u00a0',.]\d{3})+|\d+)[.,]\d{2})(?![\d]|[.,]\d)\)?")
+
+
+def _amounts(text: str) -> list[Decimal]:
+    """Every two-decimal amount in the text, in order, as Decimals. Handles comma decimals, space/apostrophe/dot
+    thousands, and negatives written with a minus or brackets."""
+    out = []
+    for m in _AMT.finditer(text):
+        body = m.group(2)
+        v = Decimal(re.sub(r"\D", "", body[:-3]) + "." + body[-2:])
+        out.append(-v if m.group(1) else v)
+    return out
+
+
 def _last_amount(line: str) -> Decimal | None:
-    m = re.findall(r"\d{1,3}(?:[,\s]\d{3})*\.\d{2}|\d+\.\d{2}", line)
-    return _num(m[-1]) if m else None
+    a = _amounts(line)
+    return a[-1] if a else None
+
+
+_IBAN_ANY = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]{2}\d{2}(?:[ \-]?[A-Za-z0-9]){11,34}")
 
 
 def find_iban(text: str) -> tuple[str | None, bool]:
@@ -106,12 +125,19 @@ def find_iban(text: str) -> tuple[str | None, bool]:
         compact = re.sub(r"[^A-Za-z0-9|]", "", tail)
         if len(compact) != 23:
             continue
+        if compact[:2].upper() != "AE" and compact[:2].upper() in IBAN_LENGTHS:
+            continue  # the OCR repair is for UAE IBANs only: never rewrite a real country code (GB, DE...); a garbled "AE" is fine
         body = compact[2:].translate(str.maketrans("OoIl|SBZ", "00111582"))
-        for prefix in ("AE",):
-            c = prefix + body
-            if iban_valid(c):
-                return c, True
-        cands.append("AE" + body)
+        c = "AE" + body
+        if iban_valid(c):
+            return c, True
+        cands.append(c)
+    # any other country: accepted only if the length for that country and the checksum both hold (no OCR repair)
+    for m in _IBAN_ANY.finditer(text):
+        compact = re.sub(r"[\s\-]", "", m.group(0)).upper()
+        n = IBAN_LENGTHS.get(compact[:2])
+        if n and len(compact) >= n and iban_valid(compact[:n]):
+            return compact[:n], True
     return (cands[0], False) if cands else (None, False)
 
 
@@ -129,11 +155,11 @@ def find_trns(text: str) -> tuple[str | None, str | None]:
     return supplier, customer
 
 
-def find_amounts_arith(text: str):
-    """Label-free: find subtotal, VAT and total by the arithmetic that must hold on a UAE tax
-    invoice (VAT = 5% of subtotal, total = subtotal + VAT). Works on any layout."""
-    amts = [_num(m) for m in re.findall(r"\d{1,3}(?:,\d{3})*\.\d{2}|\d+\.\d{2}", text)]
-    amts = [a for a in amts if a is not None and a > 0]
+def find_amounts_arith(text: str, uae_only: bool = False):
+    """Label-free: find subtotal, VAT and total by the arithmetic that must hold on a tax invoice
+    (total = subtotal + VAT). UAE 5% is tried first; otherwise any rate from 1% to 30% is accepted
+    when the total is the largest amount on the page. Works on any layout."""
+    amts = [a for a in _amounts(text) if a > 0]
     best = None
     for i, s in enumerate(amts):
         v_exp = (s * Decimal("0.05")).quantize(Decimal("0.01"))
@@ -145,6 +171,17 @@ def find_amounts_arith(text: str):
                 if abs(s + v - amts[k]) <= Decimal("0.01"):
                     if best is None or amts[k] >= best[2]:
                         best = (s, v, amts[k])
+    if best or uae_only or not amts:
+        return best
+    top = max(amts)
+    for i, s in enumerate(amts):
+        for j in range(i + 1, min(i + 6, len(amts))):
+            v = amts[j]
+            if not Decimal("0.01") <= v / s <= Decimal("0.30"):
+                continue
+            for k in range(j + 1, min(j + 6, len(amts))):
+                if amts[k] == top and abs(s + v - top) <= Decimal("0.01"):
+                    best = (s, v, top)
     return best
 
 
@@ -152,18 +189,26 @@ def find_amounts(text: str):
     arith = find_amounts_arith(text)
     if arith:
         return arith
-    sub = vat = tot = None
-    for line in text.splitlines():
-        lo = line.lower()
+    sub = None
+    vat = None  # (priority, line no, amount): a "VAT" line beats GST / sales tax / plain "tax"; the first line wins a tie
+    tot = None  # (priority, line no, amount): the most specific total label wins, the lowest line on a tie
+    for n, line in enumerate(text.splitlines()):
+        lo = line.lower().replace("_", " ")
         amt = _last_amount(line)
         if amt is None:
             continue
-        if any(k in lo for k in SUB_KEYS) and sub is None:
-            sub = amt
-        elif any(k in lo for k in VAT_KEYS) and not any(k in lo for k in NOT_VAT) and vat is None:
-            vat = amt
-        elif any(k in lo for k in TOT_KEYS) and tot is None:
-            tot = amt
+        if any(k in lo for k in SUB_KEYS):
+            sub = sub if sub is not None else amt
+        elif any(k in lo for k in VAT_KEYS) and not any(k in lo for k in NOT_VAT):
+            pri = next(i for i, k in enumerate(VAT_KEYS) if k in lo)
+            if vat is None or pri < vat[0]:
+                vat = (pri, n, amt)
+        else:
+            pri = next((i for i, k in enumerate(TOT_KEYS) if k in lo), None)
+            if pri is not None and (tot is None or (pri, -n) < (tot[0], -tot[1])):
+                tot = (pri, n, amt)
+    tot = tot[2] if tot else None
+    vat = vat[2] if vat else None
     # reconcile with arithmetic when one is missing
     if sub is not None and vat is not None and tot is None:
         tot = sub + vat
@@ -294,9 +339,80 @@ def find_invoice_number(text: str) -> str | None:
     return best[2] if best else None
 
 
+_MON = r"(?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?)"
+_MONTHS = {m: i for i, m in enumerate("jan feb mar apr may jun jul aug sep oct nov dec".split(), 1)}
+_DATE_RES = [
+    ("num", re.compile(r"(?<![\d/.\-])(\d{1,2})[/\-.](\d{1,2})[/\-.](\d{4}|\d{2})(?![\d])")),
+    ("iso", re.compile(r"(?<![\d/.\-])(\d{4})[/\-.](\d{1,2})[/\-.](\d{1,2})(?![\d])")),
+    ("dmy", re.compile(r"(?<![\d])(\d{1,2})(?:st|nd|rd|th)?[\s\-./,]*(" + _MON + r")[a-z]*\.?,?[\s\-./]*(\d{4}|\d{2})(?![\d])", re.I)),
+    ("mdy", re.compile(r"\b(" + _MON + r")[a-z]*\.?\s*(\d{1,2})(?:st|nd|rd|th)?,?\s+(\d{4}|\d{2})(?![\d])", re.I)),
+]
+
+
+def _mk_date(y: int, m: int, d: int):
+    import datetime
+    if y < 100:
+        y += 2000 if y < 70 else 1900
+    try:
+        return datetime.date(y, m, d)
+    except ValueError:
+        return None
+
+
+def parse_date(s: str, mdy: bool = False):
+    """First date in `s` as a datetime.date. An ambiguous numeric date (both numbers 12 or less) is day-first,
+    or month-first when `mdy` is set; a number above 12 always decides."""
+    best = None
+    for kind, rx in _DATE_RES:
+        m = rx.search(s)
+        if not m or (best is not None and m.start() >= best[0]):
+            continue
+        a, b, c = m.groups()
+        if kind == "num":
+            a, b = int(a), int(b)
+            month_first = b > 12 or (mdy and a <= 12)
+            d = _mk_date(int(c), a if month_first else b, b if month_first else a)
+        elif kind == "iso":
+            d = _mk_date(int(a), int(b), int(c))
+        elif kind == "dmy":
+            d = _mk_date(int(c), _MONTHS[b[:3].lower()], int(a))
+        else:
+            d = _mk_date(int(c), _MONTHS[a[:3].lower()], int(b))
+        if d:
+            best = (m.start(), d)
+    return best[1] if best else None
+
+
+_UAE_SIGNS = re.compile(r"\bAED\b|dirham|\bUAE\b|United Arab Emirates|\bTRN\b|Dubai|Abu\s*Dhabi|Sharjah|Ajman|Fujairah|Ras\s*Al|Umm\s*Al|\bAE\d{2}\b|(?<!\d)(?:\+|00)971", re.I)
+_US_SIGNS = re.compile(r"\$|,\s*[A-Z]{2}\s+\d{5}(?:-\d{4})?\b|\bUSD\b")
+
+
+def _mdy(text: str) -> bool:
+    """Is this document's numeric date order month-first? The dates themselves decide when any is unambiguous
+    (09/18/2015 is month-first, 18/09/2015 day-first); otherwise a US look (dollar amounts, a US state and ZIP code)
+    with no UAE sign (AED, TRN, an emirate, +971) means month-first. Day-first is the default."""
+    mf = df = 0
+    for m in _DATE_RES[0][1].finditer(text):
+        a, b = int(m.group(1)), int(m.group(2))
+        mf += b > 12 and a <= 12
+        df += a > 12 and b <= 12
+    if mf != df:
+        return mf > df
+    return bool(_US_SIGNS.search(text)) and not _UAE_SIGNS.search(text)
+
+
 def find_date(text: str) -> str | None:
-    m = re.search(r"(?:date|dated)[^\n\d]{0,12}(\d{1,2}[/\-.]\d{1,2}[/\-.]\d{4})", text, re.I) or re.search(r"(\d{1,2}/\d{1,2}/\d{4})", text)
-    return m.group(1).replace("-", "/").replace(".", "/") if m else None
+    """Invoice date as dd/mm/yyyy: the date after an 'invoice date / date / issued' label (not a due date),
+    else the first date on the page. Month names, ISO and 2-digit years are understood."""
+    mdy = _mdy(text)
+    for m in re.finditer(r"(?:invoice\s*date|date\s*of\s*issue|issue\s*date|issued|dated?)\b", text, re.I):
+        if re.search(r"due|delivery|ship|expiry|valid", text[max(0, m.start() - 10):m.start()], re.I):
+            continue
+        d = parse_date(text[m.end():].split("\n", 1)[0][:40], mdy)
+        if d:
+            return d.strftime("%d/%m/%Y")
+    d = parse_date(text, mdy)
+    return d.strftime("%d/%m/%Y") if d else None
 
 
 _SUP_LABEL = re.compile(r"^(?:supplier|seller|vendor|issued\s+by|from|company)(?:\s*name)?\s*(?::|-|\s{2,})\s*(.*)$", re.I)
@@ -339,7 +455,8 @@ def _labelled_supplier(lines: list[str]) -> str | None:
             return v
         for nxt in lines[i + 1:i + 3]:
             c = _clean_name(re.sub(r"\s+", " ", nxt)) if not re.search(r"\s{3,}", nxt) else _clean_name(nxt)
-            if _is_company(c) or (len(c.split()) >= 2 and not re.search(r"\d", c) and not _CUST.search(c) and not _NOT_NAME.search(c)):
+            plain = bool(c) and not re.search(r"\d", c) and not _CUST.search(c) and not _NOT_NAME.search(c) and len(c.split()) <= 6
+            if _is_company(c) or (plain and (len(c.split()) >= 2 or "-" in c)):
                 return c
     return None
 
@@ -374,6 +491,17 @@ def _merge_reads(a: str, b: str) -> str:
     return " ".join(x if _word_score(x) >= _word_score(y) else y for x, y in zip(wa, wb))
 
 
+def _name_above_address(lines: list[str]) -> str | None:
+    """Layouts with no label and no company suffix: the issuer's name is the line just above its 'Address:' line."""
+    for i, l in enumerate(lines):
+        if i and re.match(r"address\s*:", l, re.I):
+            c = _clean_name(re.sub(r"\s+", " ", lines[i - 1]))
+            if c and not re.search(r"\d|invoice|bill|date", c, re.I) and not _CUST.search(c) and not _NOT_NAME.search(c) and len(c.split()) <= 6:
+                return c
+            return None
+    return None
+
+
 def find_supplier(text: str) -> str | None:
     """Supplier (issuer) name. Evidence, strongest first: an explicit 'Supplier:'/'From:' label; a company-suffixed
     name in the header (above the Bill To block) that agrees with the payment 'Account name:'; the account name
@@ -396,7 +524,7 @@ def find_supplier(text: str) -> str | None:
         return _merge_reads(close[0], acc) if close else acc
     if heads:
         return heads[0]
-    return lab or acc
+    return lab or acc or _name_above_address(lines)
 
 
 def _clean_name(l: str) -> str:

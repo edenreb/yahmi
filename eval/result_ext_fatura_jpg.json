@@ -1,0 +1,242 @@
+{
+ "result": {
+  "set": "ext_fatura",
+  "format": "jpg",
+  "n": 60,
+  "field_accuracy": {
+   "supplier_name": 0.4419,
+   "invoice_number": 0.9608,
+   "invoice_date": 0.9661,
+   "subtotal": 0.925,
+   "vat": 0.8095,
+   "total": 1.0
+  },
+  "labelled": {
+   "supplier_name": 43,
+   "supplier_trn": 0,
+   "iban": 0,
+   "invoice_number": 51,
+   "invoice_date": 59,
+   "subtotal": 40,
+   "vat": 21,
+   "total": 48
+  },
+  "all_fields_correct": 0.5667,
+  "iban_labels_failing_checksum_not_scored": 0,
+  "iban_wrong_but_flagged": 0,
+  "iban_wrong_and_silent": 0
+ },
+ "silent_iban_cases": [],
+ "errors": [
+  [
+   "fa_0002.pdf",
+   "supplier_name",
+   "None",
+   "Kirk, Murphy and Daniels"
+  ],
+  [
+   "fa_0002.pdf",
+   "vat",
+   "8.23",
+   "86.23"
+  ],
+  [
+   "fa_0004.pdf",
+   "supplier_name",
+   "Thank you for your business!",
+   "Bailey Group"
+  ],
+  [
+   "fa_0006.pdf",
+   "supplier_name",
+   "None",
+   "White and Sons"
+  ],
+  [
+   "fa_0007.pdf",
+   "supplier_name",
+   "None",
+   "Graham, Carrillo and Stark"
+  ],
+  [
+   "fa_0009.pdf",
+   "supplier_name",
+   "None",
+   "Mclean-Cochran"
+  ],
+  [
+   "fa_0011.pdf",
+   "supplier_name",
+   "None",
+   "Richardson-Davis"
+  ],
+  [
+   "fa_0011.pdf",
+   "subtotal",
+   "826.06",
+   "826.86"
+  ],
+  [
+   "fa_0011.pdf",
+   "vat",
+   "2.63",
+   "26.72"
+  ],
+  [
+   "fa_0016.pdf",
+   "supplier_name",
+   "None",
+   "Berg, Ward and Wright"
+  ],
+  [
+   "fa_0018.pdf",
+   "supplier_name",
+   "3 Yoder LLC",
+   "Yoder LLC"
+  ],
+  [
+   "fa_0022.pdf",
+   "supplier_name",
+   "None",
+   "King, Richards and Roy"
+  ],
+  [
+   "fa_0022.pdf",
+   "invoice_date",
+   "None",
+   "1999-10-27"
+  ],
+  [
+   "fa_0024.pdf",
+   "supplier_name",
+   "None",
+   "Kelly-Moss"
+  ],
+  [
+   "fa_0031.pdf",
+   "supplier_name",
+   "None",
+   "Miller Inc"
+  ],
+  [
+   "fa_0043.pdf",
+   "supplier_name",
+   "None",
+   "Knight, Huffman and Moore"
+  ],
+  [
+   "fa_0045.pdf",
+   "supplier_name",
+   "None",
+   "Morton-Leach"
+  ],
+  [
+   "fa_0048.pdf",
+   "supplier_name",
+   "None",
+   "Robinson-Carson"
+  ],
+  [
+   "fa_0048.pdf",
+   "invoice_number",
+   "None",
+   "INV/65-23/967"
+  ],
+  [
+   "fa_0049.pdf",
+   "supplier_name",
+   "None",
+   "Stein-Fernandez"
+  ],
+  [
+   "fa_0049.pdf",
+   "invoice_date",
+   "10/09/1996",
+   "1999-01-08"
+  ],
+  [
+   "fa_0049.pdf",
+   "subtotal",
+   "485.58",
+   "435.36"
+  ],
+  [
+   "fa_0052.pdf",
+   "supplier_name",
+   "None",
+   "Kirk, Murphy and Daniels"
+  ],
+  [
+   "fa_0052.pdf",
+   "vat",
+   "16.60",
+   "18.60"
+  ],
+  [
+   "fa_0055.pdf",
+   "supplier_name",
+   "None",
+   "Phillips, Thomas and Malone"
+  ],
+  [
+   "fa_0056.pdf",
+   "supplier_name",
+   "None",
+   "White and Sons"
+  ],
+  [
+   "fa_0057.pdf",
+   "supplier_name",
+   "None",
+   "Graham, Carrillo and Stark"
+  ],
+  [
+   "fa_0058.pdf",
+   "supplier_name",
+   "None",
+   "Navarro, Ford and Bryan"
+  ],
+  [
+   "fa_0061.pdf",
+   "supplier_name",
+   "None",
+   "Richardson-Davis"
+  ],
+  [
+   "fa_0061.pdf",
+   "vat",
+   "13.90",
+   "25.93"
+  ],
+  [
+   "fa_0064.pdf",
+   "invoice_number",
+   "None",
+   "1Y1M3d-267"
+  ],
+  [
+   "fa_0067.pdf",
+   "supplier_name",
+   "Montgomery, Harrison and Vaughan AMOUNT",
+   "Montgomery, Harrison and Vaughan"
+  ],
+  [
+   "fa_0068.pdf",
+   "supplier_name",
+   "3 Yoder LLC",
+   "Yoder LLC"
+  ],
+  [
+   "fa_0074.pdf",
+   "supplier_name",
+   "None",
+   "Kelly-Moss"
+  ],
+  [
+   "fa_0078.pdf",
+   "subtotal",
+   "547.65",
+   "570.88"
+  ]
+ ]
+}
