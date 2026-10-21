@@ -34,3 +34,7 @@ models/candidates/
 
 # official API documents downloaded from the UAE API Marketplace (redistribution terms unknown)
 fta-api-docs/
+
+# real pilot data must never be inside the repo
+pilot_data/
+eval/pilot_*/
