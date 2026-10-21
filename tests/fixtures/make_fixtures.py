@@ -21,10 +21,10 @@ def iban_fix(iban):
 GOOD, BAD = iban_fix(GOOD), iban_fix(BAD)
 
 
-def inv(path, no, date, items, iban, bank):
+def inv(path, no, date, items, iban, bank, trn=TRN):
     c = canvas.Canvas(path, pagesize=A4); W, H = A4; y = H - 60
     c.setFont("Helvetica-Bold", 15); c.drawString(40, y, SUP)
-    c.setFont("Helvetica", 10); c.drawString(40, y - 16, "Al Quoz Industrial 3, Dubai"); c.drawString(40, y - 30, f"TRN: {TRN}")
+    c.setFont("Helvetica", 10); c.drawString(40, y - 16, "Al Quoz Industrial 3, Dubai"); c.drawString(40, y - 30, f"TRN: {trn}")
     c.setFont("Helvetica-Bold", 14); c.drawString(W - 200, y, "TAX INVOICE")
     c.setFont("Helvetica", 10); c.drawString(W - 200, y - 18, f"Invoice No: {no}"); c.drawString(W - 200, y - 32, f"Date: {date}")
     y -= 100; c.setFont("Helvetica-Bold", 10); c.drawString(40, y, "Bill To:")
@@ -51,6 +51,8 @@ inv(f"{OUT}/past/past_2.pdf", "INV-2177", "18/07/2026", [("Plywood 18mm sheets",
 inv(f"{OUT}/past/past_3.pdf", "INV-2290", "02/09/2026", [("Aluminium profiles", 40, 145.0), ("Delivery charges", 1, 150.0)], GOOD, "Emirates NBD")
 inv(f"{OUT}/genuine_new.pdf", "INV-2391", "14/10/2026", [("MDF panels 18mm", 80, 110.0), ("Delivery charges", 1, 150.0)], GOOD, "Emirates NBD")
 inv(f"{OUT}/fraud_new.pdf", "INV-2391", "14/10/2026", [("MDF panels 18mm", 80, 110.0), ("Delivery charges", 1, 150.0)], BAD, "Mashreq")
+# the supplier's name with a TRN the (simulated) register holds for a different company; used by the FTA-check demo
+inv(f"{OUT}/wrong_trn.pdf", "INV-2391", "14/10/2026", [("MDF panels 18mm", 80, 110.0), ("Delivery charges", 1, 150.0)], GOOD, "Emirates NBD", trn="100555512340003")
 open(f"{OUT}/email_genuine.txt", "w").write(
     "From: Rashid Accounts <accounts@falconbm.ae>\nSubject: Invoice INV-2391\n\nDear Accounts Team,\n\n"
     "Please find attached invoice INV-2391 for the MDF panels delivered on Monday, payable within 30 days to the account shown on the invoice.\n\nKind regards,\nRashid\nFalcon Building Materials LLC\n")
