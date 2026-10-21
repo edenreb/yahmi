@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta property="og:title" content="Yahmi: check the invoice before you pay"><meta property="og:description" content="Check a supplier invoice before you pay it. WhatsApp pilot coming soon."><meta property="og:type" content="website"><meta property="og:image" content="https://edenreb.github.io/yahmi/assets/icon.png">
+<meta name="theme-color" content="#0d0c0b"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yahmi — Check the invoice before you pay</title>
+<meta name="description" content="Check a supplier invoice before you pay it. Yahmi answers Stop, Check or OK and names the source of every warning. WhatsApp pilot coming soon.">
+<link rel="icon" href="assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&display=swap">
+<style>
+:root{color-scheme:dark;--bg:#0d0c0b;--panel:#121110;--panel2:#0f0e0d;--line:#221f1d;--ink:#ece9e4;--soft:#a39e96;--muted:#8a857d;--green:#2fd17e;--green-d:#1c7a4d;--tint:#0f1a14;--tint-l:#1b4631;--red:#ff6b6b;--amber:#f2b64f;--ok:#4fd69a;
+ --sans:"Inter Tight",system-ui,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+body::after{content:"";position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.07;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px}
+/* nav */
+nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(14px);background:rgba(13,12,11,.85)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:600;font-size:20px;letter-spacing:-.02em}
+.lk{height:30px;width:calc(30px*320/423);background:url(assets/logo-en.png) left center/auto 100% no-repeat}
+.wm.ar{display:none}html[lang=ar] .wm.en{display:none}html[lang=ar] .wm.ar{display:inline}
+.right{display:flex;gap:10px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:8px;font:500 14px var(--sans);padding:9px 16px;border-radius:5px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;transition:.15s}
+.btn:hover{border-color:#45423d}
+.btn.p{background:transparent;border-color:var(--green);color:var(--green)}.btn.p:hover{background:var(--green);color:#121110}
+.dd{position:relative}.dd .btn{padding:8px 12px}.dd svg{width:20px;height:14px;border-radius:2px;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+.menu{position:absolute;inset-inline-end:0;top:calc(100% + 6px);min-width:160px;background:#121110;border:1px solid var(--line);border-radius:8px;padding:4px;display:none;z-index:20}
+.dd.open .menu{display:block}.menu button{all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:5px;cursor:pointer;font:500 14px var(--sans)}
+.menu button:hover,.menu button[aria-selected=true]{background:#1c1b19;color:var(--green)}
+/* hero */
+.hero{position:relative;overflow-x:clip;padding:88px 0 40px;text-align:start}
+h1{font-size:clamp(34px,5.2vw,60px);font-weight:400;letter-spacing:-.03em;line-height:1.08;max-width:18ch;margin:0;color:var(--ink);text-wrap:balance}
+html[lang=ar] h1{letter-spacing:0;line-height:1.3;max-width:20ch}
+h1 em{font-style:normal;color:var(--green)}
+.lead{color:var(--muted);margin:18px 0 0;max-width:46ch;font-size:clamp(16px,1.6vw,18px)}
+.stage{position:relative;margin:44px auto 0;padding:8px 0 40px}
+#ascii{position:absolute;left:50%;top:-260px;width:min(1120px,100vw);height:calc(100% + 260px);transform:translateX(-50%);z-index:0;pointer-events:none;
+ -webkit-mask-image:radial-gradient(ellipse closest-side at 50% 40%,#000 15%,rgba(0,0,0,.5) 55%,transparent 100%);mask-image:radial-gradient(ellipse closest-side at 50% 40%,#000 15%,rgba(0,0,0,.5) 55%,transparent 100%)}
+.stage>*:not(#ascii),.hero .wrap>:not(.stage){position:relative;z-index:1}
+/* laptop */
+.laptop{margin:0 auto;width:100%;max-width:1040px}
+.lid{border:1px solid #2a2825;border-radius:16px 16px 0 0;padding:10px 10px 0;background:#141311;direction:ltr;text-align:left;box-shadow:0 30px 90px -30px rgba(47,209,126,.18)}
+.screen{border-radius:8px 8px 0 0;overflow:hidden;background:#121110;border:1px solid var(--line);border-bottom:0}
+.wbar{display:flex;gap:7px;padding:11px 14px;border-bottom:1px solid var(--line);background:#0e0d0c}.wbar i{width:10px;height:10px;border-radius:50%;background:#292724}
+.app{display:grid;grid-template-columns:260px 1fr;grid-template-rows:minmax(0,1fr);height:520px}
+.side{border-inline-end:1px solid var(--line);background:#0e0d0c;padding:14px 10px;overflow:hidden}
+.sh{font-weight:600;font-size:18px;padding:2px 8px 10px}
+.srch{margin:0 6px 10px;border:1px solid var(--line);background:#121110;border-radius:18px;padding:7px 12px;font-size:13px;color:#5c5852}
+.row{display:flex;gap:10px;align-items:center;padding:9px 8px;border-radius:8px;font-size:14px}.row b{display:block;font-weight:500;font-size:14px}.row span:not(.av){font-size:12px;color:var(--muted)}
+.row.act{background:#15201a}
+.av{position:relative;display:block;height:36px;width:36px;border-radius:50%;border:1px solid var(--tint-l);background:#121110;flex:none}
+.av:not(.g)::before{content:"";position:absolute;left:8px;top:6px;height:22px;width:calc(22px*320/423);background:url(assets/logo-en.png) left center/auto 100% no-repeat}
+.av.g{border-color:#24221f;background:#201e1c}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;padding:0}
+.wh{display:flex;align-items:center;gap:10px;padding:8px 14px 10px;border-bottom:1px solid var(--line);background:#0e0d0c}
+.who b{display:flex;gap:6px;align-items:center;font-size:16px;line-height:1.2}.vf{width:14px;height:14px}
+.who span{font-size:12px;color:var(--green)}
+.chat{flex:1;overflow-y:auto;scrollbar-width:none;padding:14px 22px 10px;gap:6px;min-height:0;display:flex;flex-direction:column;background:radial-gradient(#16201a 1px,transparent 1.4px) 0 0/18px 18px,#121110}
+.chat>:first-child{margin-top:auto}
+.day{align-self:center;font:500 11px var(--sans);color:var(--muted);border:1px solid var(--line);background:#121110;border-radius:6px;padding:3px 10px;margin-bottom:4px}
+.bub{position:relative;max-width:min(64%,420px);padding:7px 9px 6px;font-size:14.5px;line-height:1.4;border-radius:10px;color:var(--ink);background:#161513;border:1px solid #24221f}
+.bub.out{align-self:flex-end;background:var(--tint);border-color:var(--tint-l);border-top-right-radius:2px}
+.bub.in{align-self:flex-start;border-top-left-radius:2px}
+.bub.img{padding:4px 4px 6px;width:min(64%,330px)}
+.tm{display:flex;justify-content:flex-end;gap:4px;font:400 10.5px var(--sans);color:var(--muted);margin-top:2px}.out .tm .tk{color:var(--green)}
+.cap{margin:5px 4px 0;font-size:13px}
+.fwd{font:italic 400 11.5px var(--sans);color:var(--muted);margin-bottom:3px}
+html[lang=ar] .tx{direction:rtl;text-align:right}
+.bub .vh{font-size:24px;font-weight:600;letter-spacing:-.02em}.bub .vp{font-size:14px;color:#c2bdb5;margin-top:2px}
+.bub.stop{border-color:#4a2b2a}.bub.check{border-color:#4a3d1e}.bub.ok{border-color:var(--tint-l)}
+.bub.stop .vh{color:var(--red)}.bub.check .vh{color:var(--amber)}.bub.ok .vh{color:var(--ok)}
+.f{display:grid;grid-template-columns:10px 1fr;gap:9px;font-size:14px}
+.dot{width:9px;height:9px;border-radius:50%;margin-top:7px}.dot.r{background:var(--red)}.dot.a{background:var(--amber)}.dot.g{background:var(--ok)}
+.src{font:400 11.5px var(--sans);color:var(--muted);margin-top:3px;direction:ltr;text-align:start}html[lang=ar] .src{text-align:end}
+.inv{background:#fff;color:#1c1b19;border:1px solid #e3e1dd;border-radius:4px;padding:12px;font:11px/1.45 var(--sans);direction:ltr;text-align:left;width:100%}
+.inv .t{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;border-bottom:1px solid #ddd;padding-bottom:7px;margin-bottom:7px}
+.inv .t b{font-size:12.5px}.inv .t em{font-style:normal;font-weight:700;letter-spacing:.06em;color:#666}
+.inv .r{display:flex;justify-content:space-between}.inv .m{color:#666}
+.inv hr{border:0;border-top:1px solid #ddd;margin:6px 0}.inv .g{font-weight:700;font-size:12px}
+.inv .bk{margin-top:8px;padding:6px 8px;background:#f2f2f2;border-radius:3px;font:10px/1.4 var(--sans);font-variant-numeric:tabular-nums;word-break:break-all}
+.inp{display:flex;align-items:center;gap:10px;padding:10px 16px;border-top:1px solid var(--line);background:#0e0d0c}
+.inp .fld{flex:1;border:1px solid #24221f;background:#121110;border-radius:20px;padding:8px 14px;font-size:14px;color:#5c5852}
+.inp .pl{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:var(--green);border:1px solid var(--tint-l);font-size:18px}.inp .mic{font-size:11px}
+.base{height:14px;margin:0 -3%;background:linear-gradient(#1c1b19,#161513);border:1px solid #2a2825;border-top:0;border-radius:0 0 18px 18px;position:relative}
+.base i{position:absolute;left:50%;top:0;transform:translateX(-50%);width:110px;height:5px;background:#0e0d0c;border-radius:0 0 8px 8px}
+.pop{animation:pop .35s ease both}@keyframes pop{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.typing{display:inline-flex;gap:5px;padding:6px 2px}
+.typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:bl 1s infinite}.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bl{0%,60%,100%{opacity:.25}30%{opacity:1}}
+/* sections */
+section{padding:88px 0}
+.k{font:500 13px var(--sans);color:var(--green)}
+h2{font-size:clamp(26px,3.4vw,38px);letter-spacing:-.025em;line-height:1.15;font-weight:400;margin:12px 0 0;max-width:22ch}
+html[lang=ar] h2{letter-spacing:0;line-height:1.3}
+.steps,.grid{display:grid;gap:14px;margin-top:40px;grid-template-columns:repeat(3,1fr)}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:26px;transition:.2s}
+.card:hover{border-color:var(--green)}
+.card .n{font:500 13px var(--sans);color:var(--green)}
+.card h3{margin:12px 0 8px;font-size:19px;letter-spacing:-.015em;font-weight:500}.card p{margin:0;color:var(--muted);font-size:15px}
+.chip{display:inline-block;font:500 11px var(--sans);padding:3px 9px;border-radius:4px;margin-top:14px;border:1px solid}
+.chip.r{color:var(--red);border-color:rgba(255,107,107,.35)}.chip.a{color:var(--amber);border-color:rgba(242,182,79,.35)}
+.core{margin-top:40px;border:1px solid var(--line);border-inline-start:3px solid var(--green);background:#121110;border-radius:8px;padding:34px}
+.tag{font:500 12px var(--sans);color:var(--green)}
+.core p{font-size:clamp(19px,2.6vw,26px);line-height:1.4;letter-spacing:-.02em;margin:14px 0 0;max-width:44ch}html[lang=ar] .core p{letter-spacing:0;line-height:1.7}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
+.stat{border-top:1px solid var(--line);padding-top:18px}.stat b{display:block;color:var(--green);font-size:40px;letter-spacing:-.03em;font-weight:400}.stat span{color:var(--muted);font-size:14px;display:block;margin-top:6px}
+footer{padding:32px 0 48px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap}
+@media(max-width:860px){.app{grid-template-columns:1fr;height:560px}.side{display:none}.bub{max-width:88%}.bub.img{width:88%}.base{margin:0}.steps,.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.hero{padding-top:64px}section{padding:64px 0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}.pop,.typing i{animation:none!important}}
+
+/* framed style */
+.brk{position:relative}
+.brk::before{content:"";position:absolute;inset:-7px;pointer-events:none;z-index:2;
+ background:
+ linear-gradient(var(--soft),var(--soft)) left top/14px 1px,linear-gradient(var(--soft),var(--soft)) left top/1px 14px,
+ linear-gradient(var(--soft),var(--soft)) right top/14px 1px,linear-gradient(var(--soft),var(--soft)) right top/1px 14px,
+ linear-gradient(var(--soft),var(--soft)) left bottom/14px 1px,linear-gradient(var(--soft),var(--soft)) left bottom/1px 14px,
+ linear-gradient(var(--soft),var(--soft)) right bottom/14px 1px,linear-gradient(var(--soft),var(--soft)) right bottom/1px 14px;
+ background-repeat:no-repeat}
+nav{background:transparent;backdrop-filter:none;position:static;padding-top:14px}
+nav .wrap{height:auto}
+.navbox{width:100%;display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px;padding:0 20px;border:1px solid var(--line);background:var(--bg)}
+.btn.p{position:relative;border-radius:2px}
+.btn,.card,.core,.dd .btn{border-radius:2px}
+.hero{padding:36px 0 40px}
+.hpanel{padding:40px 0 0}
+.stage{margin-top:48px}
+.card,.core{background:var(--bg)}
+@media(max-width:860px){.navbox{padding:0 14px}}
+</style>
+</head>
+<body>
+<nav><div class="wrap"><div class="navbox brk">
+  <a class="logo" href="#top" aria-label="Yahmi"><span class="lk" aria-hidden="true"></span><span class="wm en">Yahmi</span><span class="wm ar">يحمي</span></a>
+  <div class="right"><div class="dd" id="dd"><button class="btn" id="ddb" aria-haspopup="listbox" aria-expanded="false"><span id="ddf"></span><span id="ddl"></span><span aria-hidden="true">▾</span></button>
+    <div class="menu" role="listbox"><button role="option" data-l="en"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><g fill="#b22234"><rect width="30" height="1.54"/><rect y="3.08" width="30" height="1.54"/><rect y="6.15" width="30" height="1.54"/><rect y="9.23" width="30" height="1.54"/><rect y="12.3" width="30" height="1.54"/><rect y="15.4" width="30" height="1.54"/><rect y="18.46" width="30" height="1.54"/></g><rect width="12" height="10.8" fill="#3c3b6e"/></svg>English</button><button role="option" data-l="ar"><svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#00732f"/><rect y="13.33" width="30" height="6.67" fill="#000"/><rect width="8" height="20" fill="#ff0000"/></svg>العربية</button></div></div><a class="btn p" href="https://github.com/edenreb/yahmi" data-i18n="nav_try"></a></div>
+</div></div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div class="hpanel"><h1 data-i18n-html="h1"></h1>
+  <p class="lead" data-i18n="lead"></p></div>
+
+  <div class="stage">
+    <canvas id="ascii" aria-hidden="true"></canvas>
+    <div class="laptop" aria-label="Example">
+      <div class="lid"><div class="screen">
+        <div class="wbar"><i></i><i></i><i></i></div>
+        <div class="app">
+          <aside class="side">
+            <div class="sh" data-i18n="m_chats"></div>
+            <div class="srch" data-i18n="m_search"></div>
+            <div class="row act"><span class="av" aria-hidden="true"></span><div><b>Yahmi</b><span data-i18n="m_prev"></span></div></div>
+            <div class="row"><span class="av g"></span><div><b data-i18n="m_r2"></b><span>···</span></div></div>
+            <div class="row"><span class="av g"></span><div><b data-i18n="m_r3"></b><span>···</span></div></div>
+          </aside>
+          <section class="main">
+            <div class="wh"><span class="av" aria-hidden="true"></span>
+              <div class="who"><b>Yahmi <svg class="vf" viewBox="0 0 16 16"><circle cx="8" cy="8" r="8" fill="#2fd17e"/><path d="M4.5 8.2l2.3 2.3 4.7-4.8" stroke="#0d0c0b" stroke-width="1.8" fill="none"/></svg></b><span data-i18n="m_online"></span></div></div>
+            <div class="chat" id="chat" aria-live="polite"></div>
+            <div class="inp"><span class="pl">+</span><span class="fld" data-i18n="m_msg"></span><span class="pl mic">●</span></div>
+          </section>
+        </div>
+      </div></div>
+      <div class="base"><i></i></div>
+    </div>
+  </div>
+  <p class="src" style="text-align:center;margin-top:14px" data-i18n="m_note"></p>
+</div></header>
+
+<section id="how"><div class="wrap">
+  <div class="k" data-i18n="how_k"></div><h2 data-i18n="how_h"></h2>
+  <div class="steps">
+    <div class="card"><div class="n">01</div><h3 data-i18n="s1h"></h3><p data-i18n="s1p"></p></div>
+    <div class="card"><div class="n">02</div><h3 data-i18n="s2h"></h3><p data-i18n="s2p"></p></div>
+    <div class="card"><div class="n">03</div><h3 data-i18n="s3h"></h3><p data-i18n="s3p"></p></div>
+  </div>
+  <div class="core"><div class="tag" data-i18n="core_k"></div><p style="margin-top:14px" data-i18n="core_p"></p></div>
+</div></section>
+
+<section id="checks"><div class="wrap">
+  <div class="k" data-i18n="ck_k"></div><h2 data-i18n="ck_h"></h2>
+  <div class="grid">
+    <div class="card"><h3 data-i18n="c1h"></h3><p data-i18n="c1p"></p><span class="chip r" data-i18n="red"></span></div>
+    <div class="card"><h3 data-i18n="c2h"></h3><p data-i18n="c2p"></p><span class="chip a" data-i18n="amber"></span></div>
+    <div class="card"><h3 data-i18n="c3h"></h3><p data-i18n="c3p"></p><span class="chip r" data-i18n="red"></span></div>
+    <div class="card"><h3 data-i18n="c4h"></h3><p data-i18n="c4p"></p><span class="chip r" data-i18n="redamber"></span></div>
+    <div class="card"><h3 data-i18n="c5h"></h3><p data-i18n="c5p"></p><span class="chip a" data-i18n="redamber"></span></div>
+    <div class="card"><h3 data-i18n="c6h"></h3><p data-i18n="c6p"></p><span class="chip r" data-i18n="redamber"></span></div>
+  </div>
+</div></section>
+
+<section id="results"><div class="wrap">
+  <div class="k" data-i18n="rs_k"></div><h2 data-i18n="rs_h"></h2>
+  <div class="stats">
+    <div class="stat"><b>0</b><span data-i18n="st1"></span></div>
+    <div class="stat"><b>85%</b><span data-i18n="st2"></span></div>
+    <div class="stat"><b>2/52</b><span data-i18n="st3"></span></div>
+  </div>
+</div></section>
+
+<section id="privacy"><div class="wrap">
+  <div class="k" data-i18n="pv_k"></div><h2 data-i18n="pv_h"></h2>
+  <div class="grid">
+    <div class="card"><h3 data-i18n="p1h"></h3><p data-i18n="p1p"></p></div>
+    <div class="card"><h3 data-i18n="p2h"></h3><p data-i18n="p2p"></p></div>
+    <div class="card"><h3 data-i18n="p3h"></h3><p data-i18n="p3p"></p></div>
+  </div>
+</div></section>
+
+
+<footer><div class="wrap"><span>© 2026 Yahmi</span><span data-i18n="foot"></span></div></footer>
+
+<script>
+const T={en:{
+nav_how:"How it works",nav_checks:"Checks",nav_results:"Results",nav_privacy:"Privacy",nav_try:"GitHub",
+pill:"UAE Hackathon 2026 · SME protection",
+h1:"<em>Yahmi</em> it before you pay it.",
+lead:"Check a supplier invoice before you pay it. WhatsApp pilot coming soon.",
+cta1:"Check an invoice",cta2:"See how it works",
+m_tag1:"You forward",m_email:"Supplier email",m_email2:"“We have updated our bank details. Please pay today.”",
+m_tag2:"Yahmi replies",m_stop:"Stop",m_stop2:"Verify with the supplier before paying.",
+m_f1:"This IBAN is different from the account you paid this supplier last time.",m_s1:"source: your payment history",
+m_f2:"Replies go to a different domain than the sender.",m_s2:"source: email headers",
+m_f3:"IBAN checksum is valid.",m_s3:"source: ISO 13616 mod-97",
+m_chats:"Chats",m_search:"Search",m_prev:"Check an invoice",m_r2:"Accounts",m_r3:"Sales",m_online:"online",m_msg:"Message",m_today:"Today",m_replay:"↻ Replay",m_demo:"Live demo",m_note:"Preview of the planned WhatsApp pilot · invented data",
+vs_k:"Why Yahmi",vs_h:"Most checks start after the money has left.",
+vs_old_k:"After the fact",vs_old_h:"Recall and regret",
+vs_o1:"The transfer is sent before anyone doubts it.",vs_o2:"Banks can confirm a payee, but only at the moment of paying.",vs_o3:"Recovery depends on how fast you notice.",vs_o4:"Staff are told to “be careful”, with nothing to check against.",
+vs_new_k:"With Yahmi",vs_new_h:"A second look when the invoice arrives",
+vs_n1:"Works on the invoice itself, PDF or photo.",vs_n2:"Compares it with what you paid this supplier before.",vs_n3:"Every warning shows its source.",vs_n4:"Says “verify”, never “this is fraud”.",
+how_k:"How it works",how_h:"Three steps, no app to install.",
+s1h:"Forward",s1p:"Send the invoice, and optionally the email it came with. The pilot will run on WhatsApp.",
+s2h:"We read and compare",s2p:"Yahmi reads the invoice, checks the IBAN, VAT and sender, and compares the account with your history.",
+s3h:"Stop, Check or OK",s3p:"One clear answer in English or Arabic, with the reasons and where each came from.",
+core_k:"The core idea",core_p:"Every invoice fraud that makes you pay has to send money to an account you have never paid, or one that differs from your supplier’s usual account. Yahmi flags that however convincing the email looks.",
+ck_k:"What it checks",ck_h:"Evidence you can act on.",
+c1h:"Bank details changed",c1p:"The account differs from the one you paid this supplier before.",
+c2h:"First payment to an account",c2p:"You have never paid this IBAN. Worth a quick call to confirm.",
+c3h:"Network warning",c3p:"Other businesses pay this supplier into a different account. Stored as keyed fingerprints only.",
+c4h:"IBAN and bank",c4p:"ISO 13616 checksum, UAE bank code, legacy or merged banks, exchange houses.",
+c5h:"UAE tax rules",c5p:"TRN format, 5% VAT arithmetic, totals that add up, required tax-invoice fields.",
+c6h:"Sender and wording",c6p:"Reply-to mismatch, lookalike domains, and an AI score for payment-fraud wording.",
+red:"Red",amber:"Amber",redamber:"Red / Amber",
+rs_k:"Measured results",rs_h:"Numbers as measured, with their limits.",
+st1:"wrong IBANs accepted on test invoices",st2:"fraud emails flagged on tests",st3:"genuine emails flagged",
+pv_k:"Privacy",pv_h:"Built so account numbers can’t be read back.",
+p1h:"Keyed fingerprints",p1p:"Supplier IDs and IBANs are stored only as HMAC-SHA256 fingerprints with a server-side key.",
+p2h:"Invoices deleted",p2p:"The file is removed right after it is read.",
+p3h:"Cites its source",p3p:"Every warning names the record it came from, so you can verify it yourself.",
+
+foot:"Built in Dubai for the UAE Hackathon 2026"},
+ar:{
+nav_how:"كيف يعمل",nav_checks:"الفحوصات",nav_results:"النتائج",nav_privacy:"الخصوصية",nav_try:"GitHub",
+pill:"هاكاثون الإمارات 2026 · حماية الشركات الصغيرة",
+h1:"<em>يحمي</em> الفاتورة قبل أن تدفعها.",
+lead:"افحص فاتورة المورّد قبل أن تدفعها. تجربة واتساب قريبًا.",
+cta1:"افحص فاتورة",cta2:"شاهد كيف يعمل",
+m_tag1:"ترسل",m_email:"بريد المورّد",m_email2:"«حدّثنا بياناتنا المصرفية. يرجى الدفع اليوم.»",
+m_tag2:"يردّ يحمي",m_stop:"توقّف",m_stop2:"تحقّق من المورّد قبل الدفع.",
+m_f1:"رقم الآيبان يختلف عن الحساب الذي دفعت إليه هذا المورّد سابقًا.",m_s1:"المصدر: سجل مدفوعاتك",
+m_f2:"الردود تذهب إلى نطاق مختلف عن نطاق المرسل.",m_s2:"المصدر: ترويسة البريد",
+m_f3:"المجموع الاختباري للآيبان صحيح.",m_s3:"المصدر: ISO 13616 mod-97",
+m_chats:"المحادثات",m_search:"بحث",m_prev:"افحص فاتورة",m_r2:"الحسابات",m_r3:"المبيعات",m_online:"متصل",m_msg:"رسالة",m_today:"اليوم",m_replay:"↻ أعد التشغيل",m_demo:"عرض مباشر",m_note:"معاينة لتجربة واتساب المخطط لها · بيانات مختلقة",
+vs_k:"لماذا يحمي",vs_h:"أغلب الفحوصات تبدأ بعد خروج المال.",
+vs_old_k:"بعد فوات الأوان",vs_old_h:"استرجاع وندم",
+vs_o1:"يُرسل التحويل قبل أن يشكّ فيه أحد.",vs_o2:"البنوك تؤكد المستفيد، لكن لحظة الدفع فقط.",vs_o3:"الاسترداد يعتمد على سرعة اكتشافك.",vs_o4:"يُطلب من الموظفين «الحذر» دون شيء يقارنون به.",
+vs_new_k:"مع يحمي",vs_new_h:"نظرة ثانية عند وصول الفاتورة",
+vs_n1:"يعمل على الفاتورة نفسها، PDF أو صورة.",vs_n2:"يقارنها بما دفعته لهذا المورّد من قبل.",vs_n3:"كل تحذير يعرض مصدره.",vs_n4:"يقول «تحقّق»، لا «هذا احتيال».",
+how_k:"كيف يعمل",how_h:"ثلاث خطوات، بلا تطبيق.",
+s1h:"أرسل",s1p:"أرسل الفاتورة، واختياريًا البريد الذي وصلت معه. ستعمل التجربة عبر واتساب.",
+s2h:"نقرأ ونقارن",s2p:"يقرأ يحمي الفاتورة، ويفحص الآيبان وضريبة القيمة المضافة والمرسل، ويقارن الحساب بسجلك.",
+s3h:"توقّف أو تحقّق أو سليم",s3p:"إجابة واحدة واضحة بالعربية أو الإنجليزية، مع الأسباب ومصدر كل منها.",
+core_k:"الفكرة الأساسية",core_p:"كل احتيال فواتير يجعلك تدفع لا بد أن يرسل المال إلى حساب لم تدفع له من قبل، أو يختلف عن حساب المورّد المعتاد. يحمي ينبّهك لذلك مهما بدا البريد مقنعًا.",
+ck_k:"ماذا يفحص",ck_h:"أدلة يمكنك البناء عليها.",
+c1h:"تغيّرت البيانات المصرفية",c1p:"الحساب يختلف عن الذي دفعت إليه هذا المورّد سابقًا.",
+c2h:"أول دفعة إلى حساب",c2p:"لم تدفع إلى هذا الآيبان من قبل. يستحق اتصالًا سريعًا للتأكد.",
+c3h:"تحذير الشبكة",c3p:"شركات أخرى تدفع لهذا المورّد في حساب مختلف. تُخزَّن كبصمات مشفّرة فقط.",
+c4h:"الآيبان والبنك",c4p:"المجموع الاختباري ISO 13616، ورمز البنك الإماراتي، والبنوك المدمجة أو القديمة، وشركات الصرافة.",
+c5h:"قواعد الضريبة الإماراتية",c5p:"صيغة رقم التسجيل الضريبي، وحساب ضريبة 5%، ومطابقة المجاميع، وبيانات الفاتورة الضريبية المطلوبة.",
+c6h:"المرسل والصياغة",c6p:"اختلاف عنوان الرد، والنطاقات المشابهة، ودرجة ذكاء اصطناعي لصياغة احتيال الدفع.",
+red:"أحمر",amber:"كهرماني",redamber:"أحمر / كهرماني",
+rs_k:"النتائج المقاسة",rs_h:"أرقام كما قِيست، مع حدودها.",
+st1:"آيبان خاطئ قُبل في فواتير الاختبار",st2:"من رسائل الاحتيال نُبّه عليها في الاختبارات",st3:"رسائل سليمة نُبّه عليها",
+pv_k:"الخصوصية",pv_h:"مصمَّم بحيث لا يمكن استرجاع أرقام الحسابات.",
+p1h:"بصمات مشفّرة",p1p:"تُخزَّن هويات الموردين وأرقام الآيبان كبصمات HMAC-SHA256 بمفتاح على الخادم فقط.",
+p2h:"حذف الفواتير",p2p:"يُحذف الملف فور قراءته.",
+p3h:"يذكر مصدره",p3p:"كل تحذير يسمّي السجل الذي جاء منه لتتحقق بنفسك.",
+
+foot:"صُنع في دبي لهاكاثون الإمارات 2026"}};
+const $=s=>document.querySelectorAll(s);
+function setLang(l){
+ const d=T[l];document.documentElement.lang=l;document.documentElement.dir=l==="ar"?"rtl":"ltr";
+ $("[data-i18n]").forEach(e=>e.textContent=d[e.dataset.i18n]);
+ $("[data-i18n-html]").forEach(e=>e.innerHTML=d[e.dataset.i18nHtml]);
+ document.title=l==="ar"?"يحمي — تحقّق من الفاتورة قبل أن تدفع":"Yahmi — Check the invoice before you pay";
+ const F={en:`<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><g fill="#b22234"><rect width="30" height="1.54"/><rect y="3.08" width="30" height="1.54"/><rect y="6.15" width="30" height="1.54"/><rect y="9.23" width="30" height="1.54"/><rect y="12.3" width="30" height="1.54"/><rect y="15.4" width="30" height="1.54"/><rect y="18.46" width="30" height="1.54"/></g><rect width="12" height="10.8" fill="#3c3b6e"/></svg>`,ar:`<svg viewBox="0 0 30 20"><rect width="30" height="20" fill="#fff"/><rect width="30" height="6.67" fill="#00732f"/><rect y="13.33" width="30" height="6.67" fill="#000"/><rect width="8" height="20" fill="#ff0000"/></svg>`};
+ document.getElementById("ddf").innerHTML=F[l];document.getElementById("ddl").textContent=l==="ar"?"AR":"EN";
+ $(".menu button").forEach(b=>b.setAttribute("aria-selected",b.dataset.l===l));
+ try{localStorage.setItem("lang",l)}catch(e){}
+ if(window.play&&S)play(si,true);
+}
+
+const S=[
+{tab:{en:"Bank details changed",ar:"تغيّرت البيانات المصرفية"},inv:["Al Noor Trading LLC", "INV-0412", "100234567800003", [["Office desks \u00d76", "12,000.00"], ["Chairs \u00d76", "6,000.00"]], "18,000.00", "900.00", "18,900.00", "AE07 0331 2345 6789 0123 456"],
+ mail:{en:"“We have updated our bank details. Please pay today.”",ar:"«حدّثنا بياناتنا المصرفية. يرجى الدفع اليوم.»"},cls:"stop",
+ v:{en:["Stop","Verify with the supplier before paying."],ar:["توقّف","تحقّق من المورّد قبل الدفع."]},
+ f:[["r",{en:"This IBAN is different from the account you paid this supplier last time.",ar:"رقم الآيبان يختلف عن الحساب الذي دفعت إليه هذا المورّد سابقًا."},{en:"source: your payment history",ar:"المصدر: سجل مدفوعاتك"}],
+    ["a",{en:"Replies go to a different domain than the sender.",ar:"الردود تذهب إلى نطاق مختلف عن نطاق المرسل."},{en:"source: email headers",ar:"المصدر: ترويسة البريد"}],
+    ["g",{en:"IBAN checksum is valid.",ar:"المجموع الاختباري للآيبان صحيح."},{en:"source: ISO 13616 mod-97",ar:"المصدر: ISO 13616 mod-97"}]]}];
+let si=0,auto=true,timers=[],atimer;
+const E=document.getElementById.bind(document),lg=()=>document.documentElement.lang;
+const still=matchMedia("(prefers-reduced-motion:reduce)").matches;
+function tabs(){return;E("tabs").innerHTML="";S.forEach((x,i)=>{const b=document.createElement("button");b.textContent=x.tab[lg()];b.setAttribute("role","tab");b.setAttribute("aria-selected",i===si);b.onclick=()=>{auto=false;play(i)};E("tabs").append(b)})}
+function inv(v,l){const [co,no,trn,it,sub,vat,tot,ib]=v;
+ return `<div class="inv"><div class="t"><div><b>${co}</b><div class="m">TRN ${trn}</div></div><em>TAX INVOICE</em></div>
+ <div class="r m"><span>${no}</span><span>21 Oct 2026</span></div><hr>
+ ${it.map(r=>`<div class="r"><span>${r[0]}</span><span>${r[1]}</span></div>`).join("")}<hr>
+ <div class="r m"><span>Subtotal</span><span>${sub}</span></div><div class="r m"><span>VAT 5%</span><span>${vat}</span></div>
+ <div class="r g"><span>Total AED</span><span>${tot}</span></div><div class="bk">IBAN ${ib}</div></div>`}
+const tick=(t,o)=>`<div class="tm"><span>${t}</span>${o?'<span class="tk">✓✓</span>':""}</div>`;
+function play(i,instant){
+ si=i;timers.forEach(clearTimeout);timers=[];tabs();
+ const x=S[i],l=lg(),chat=E("chat");chat.innerHTML=`<div class="day">${T[l].m_today}</div>`;
+ const at=(ms,fn)=>instant||still?fn():timers.push(setTimeout(fn,ms));
+ let mi=0;const clock=()=>`9:${41+mi}`;
+ const add=(cls,h,o,keep)=>{const d=document.createElement("div");d.className="bub pop "+cls;d.innerHTML=h+(keep?"":tick(clock(),o));chat.append(d);chat.scrollTo({top:chat.scrollHeight,behavior:instant||still?"auto":"smooth"});return d};
+ at(0,()=>add("out img",inv(x.inv,l)+`<div class="cap">📄 ${x.inv[1]}.pdf</div>`,1));
+ if(x.mail)at(900,()=>{mi++;add("out",`<div class="fwd">↪ ${T[l].m_email}</div><div class="tx">${x.mail[l]}</div>`,1)});
+ const t0=x.mail?1800:1100;
+ at(t0,()=>{mi++;const d=add("in",'<span class="typing"><i></i><i></i><i></i></span>',0,1);d.id="ty"});
+ at(t0+1000,()=>{const t=E("ty");t&&t.remove();add("in "+x.cls,`<div class="vh">● ${x.v[l][0]}</div><div class="vp tx">${x.v[l][1]}</div>`)});
+ x.f.forEach((f,k)=>at(t0+1500+k*500,()=>add("in",`<div class="f"><span class="dot ${f[0]}"></span><div><span class="tx">${f[1][l]}</span><div class="src">${f[2][l]}</div></div></div>`)));
+ clearTimeout(atimer);if(auto&&!still)atimer=setTimeout(()=>{if(auto)play((si+1)%S.length)},t0+1500+x.f.length*500+4500);
+}
+
+(function(){
+ const c=E("ascii"),g=c.getContext("2d"),CH=" .·:-=+*#%@01";let W,H,cols,rows,run=false,t=0,last=0;const cell=15;
+ function size(){const r=c.getBoundingClientRect(),d=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;c.width=W*d;c.height=H*d;g.setTransform(d,0,0,d,0,0);cols=Math.ceil(W/cell);rows=Math.ceil(H/cell);g.font="12px Inter Tight, sans-serif";g.textBaseline="top"}
+ function draw(ts){
+  if(!run)return;requestAnimationFrame(draw);if(ts-last<55)return;last=ts;t+=.035;
+  g.clearRect(0,0,W,H);
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+   let v=Math.sin(x*.22+t*1.3)+Math.sin(y*.3-t)+Math.sin((x+y)*.12+t*.7);v=(v+3)/6;
+   v*=.85;
+   const i=Math.floor(v*(CH.length-1));if(!i)continue;
+   g.fillStyle=`rgba(47,209,126,${.18+v*.7})`;g.fillText(CH[i],x*cell,y*cell)}
+ }
+ function stat(){t=1;run=true;draw(1e9);run=false}
+ addEventListener("resize",()=>{size();if(still)stat()});
+ size();if(still){stat();return}
+ new IntersectionObserver(([e])=>{if(e.isIntersecting&&!run){run=true;requestAnimationFrame(draw)}else if(!e.isIntersecting)run=false}).observe(c);
+})();
+let cur;try{cur=localStorage.getItem("lang")}catch(e){}
+cur=cur||((navigator.language||"").startsWith("ar")?"ar":"en");
+setLang(cur);play(0);
+const dd=document.getElementById("dd"),ddb=document.getElementById("ddb");
+ddb.onclick=e=>{e.stopPropagation();ddb.setAttribute("aria-expanded",dd.classList.toggle("open"))};
+document.addEventListener("click",()=>{dd.classList.remove("open");ddb.setAttribute("aria-expanded","false")});
+$(".menu button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+</script>
+</body>
+</html>

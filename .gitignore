@@ -31,3 +31,6 @@ data/real_invoices_uae/
 models/*.joblib
 models/archive/
 models/candidates/
+
+# official API documents downloaded from the UAE API Marketplace (redistribution terms unknown)
+fta-api-docs/
