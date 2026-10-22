@@ -1,0 +1,161 @@
+{
+ "dataset": "data/arabic_holdout_v1.json",
+ "model": "models/bec_multi.joblib",
+ "n": 84,
+ "fraud": 51,
+ "legit": 33,
+ "amber_threshold": 0.62,
+ "red_threshold": 0.8,
+ "fraud_caught_amber": 27,
+ "fraud_caught_red": 20,
+ "false_alarms_amber": 9,
+ "false_alarms_red": 4,
+ "auc": 0.745,
+ "amber_ci": [
+  39.5,
+  65.9
+ ],
+ "red_ci": [
+  27.0,
+  52.9
+ ],
+ "fa_amber_ci": [
+  15.1,
+  44.2
+ ],
+ "fa_red_ci": [
+  4.8,
+  27.3
+ ],
+ "fraud_by_attack_type": {
+  "account_lock": {
+   "n": 29,
+   "amber": 19,
+   "red": 14
+  },
+  "bank_change": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "fake_invoice": {
+   "n": 10,
+   "amber": 2,
+   "red": 2
+  },
+  "fake_payment_received": {
+   "n": 2,
+   "amber": 1,
+   "red": 1
+  },
+  "other": {
+   "n": 5,
+   "amber": 2,
+   "red": 2
+  },
+  "overdue_statement": {
+   "n": 3,
+   "amber": 3,
+   "red": 1
+  },
+  "payroll": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  }
+ },
+ "legit_by_source": {
+  "APEC English/Arabic phishing email corpus": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: account.email_template_edi_credit_note": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: account.email_template_edi_invoice": {
+   "n": 1,
+   "amber": 1,
+   "red": 1
+  },
+  "Odoo 17 Arabic email template: account.mail_template_data_payment_receipt": {
+   "n": 1,
+   "amber": 1,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: event.event_registration_mail_template_badge": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: event.event_reminder": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: project.mail_template_data_project_task": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: project.project_done_email_template": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: project.rating_project_request_email_template": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: purchase.email_template_edi_purchase": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: purchase.email_template_edi_purchase_done": {
+   "n": 1,
+   "amber": 1,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: purchase.email_template_edi_purchase_reminder": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: sale.email_template_edi_sale": {
+   "n": 1,
+   "amber": 1,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: sale.mail_template_sale_cancellation": {
+   "n": 1,
+   "amber": 1,
+   "red": 1
+  },
+  "Odoo 17 Arabic email template: sale.mail_template_sale_confirmation": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: stock.mail_template_data_delivery_confirmation": {
+   "n": 1,
+   "amber": 0,
+   "red": 0
+  },
+  "Odoo 17 Arabic email template: website_sale.mail_template_sale_cart_recovery": {
+   "n": 1,
+   "amber": 1,
+   "red": 1
+  }
+ },
+ "dataset_caveats": [
+  "APEC Arabic is machine-translated, not native; 17 APEC legitimate rows are curated business-like text.",
+  "16 legitimate items are Odoo Arabic transactional templates, not captured email.",
+  "APEC is CC BY-NC-SA 4.0 with an underlying NDA restriction; local evaluation only.",
+  "Labels were curated by the collector, not independently hand-verified item by item.",
+  "This is a translated/template stress test, not a native Arabic customer-email holdout."
+ ]
+}

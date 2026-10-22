@@ -14,9 +14,9 @@ from .rules import IBAN_LENGTHS, Invoice, iban_valid
 
 SUFFIX = (r"(?:L\.?L\.?C\.?|FZ-?LLC|FZE|FZCO|Est\.?|Establishment|Co\.?\s*LLC|PJSC|Trading|Company"
           r"|Pty\.?\s*Ltd\.?|Sdn\.?\s*Bhd\.?|Pvt\.?\s*Ltd\.?|Ltd\.?|Limited|Inc\.?|Incorporated|Corp\.?|Corporation|LLP|GmbH|PLC|S\.A\.|B\.V\.|S\.?R\.?L\.?|SARL)")
-SUB_KEYS = ["sub total", "subtotal", "taxable", "net amount", "excl", "before vat", "amount before"]
+SUB_KEYS = ["sub total", "subtotal", "net total", "taxable", "net amount", "excl", "before vat", "amount before"]
 VAT_KEYS = ["vat", "value added tax", "gst", "sales tax", "tax"]
-TOT_KEYS = ["grand total", "total due", "amount due", "amount payable", "balance due", "incl", "total"]
+TOT_KEYS = ["grand total", "total due", "amount due", "amount payable", "balance due", "gross", "incl", "total"]
 NOT_VAT = ["tax invoice", "tax reg", "registration", "incl", "excl", "before", "taxable", "trn"]
 
 
@@ -99,9 +99,51 @@ def _amounts(text: str) -> list[Decimal]:
     return out
 
 
-def _last_amount(line: str) -> Decimal | None:
+def _last_amount(line: str, doc_cents: bool = True) -> Decimal | None:
     a = _amounts(line)
+    if not a:
+        a = _int_money(line, bare=not doc_cents)
     return a[-1] if a else None
+
+
+# Amounts written without decimal places (fils dropped, or a currency printed in whole units).
+# Thousand-grouped integers ("1,234", "1 234 567", "1.234") count anywhere; an ungrouped "1250"
+# counts when a currency code or symbol is attached ("AED 1250", "$ 1250", "1250 AED"), or when
+# the whole document has no decimal amounts at all and the line carries a money label.
+# Percent signs, dates ("26/10"), phone-number chains and TRN digits never match.
+_CUE = r"(?:(?:AED|USD|EUR|GBP|SAR|QAR|OMR|KWD|BHD|EGP|Dhs?|Dirhams?)(?![A-Za-z])|[$£€¥])"
+_AMT_NO_DEC = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(\d{1,3}(?:[ \u00a0',.]\d{3})+)(?!\d|[.,]\d|\s?\d)")
+_AMT_CUED_BEFORE = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(?:" + _CUE + r")\s{0,2}(\d+)(?!\d|[.,]\d|\s?\d)", re.I)
+_AMT_CUED_AFTER = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(\d+)(?!\d|[.,]\d|\s?\d)\W{0,3}(?:" + _CUE + r")(?![-A-Za-z])", re.I)
+_AMT_INT_BARE = re.compile(
+    r"(?<![\w.,'])(\(?\s?-)?\s?(\d+)(?!\d|[.,]\d|\s?\d)"
+    r"(?!\s{0,2}%)(?!\s{0,2}(?:days?|nights?|hrs?|hours?|minutes?|items?|pieces?|pcs|units?|kg|tons?|months?|years?|weeks?|n[o0]s?\.?)\b)",
+    re.I)
+
+
+def _int_money(text: str, bare: bool = False) -> list[Decimal]:
+    """Money with no decimal places, in document order (grouped thousands; cued plain integers;
+    bare integers only when the caller says the document has no decimal amounts anywhere)."""
+    out, seen = [], set()
+    pairs = [(_AMT_NO_DEC, 2), (_AMT_CUED_BEFORE, 2), (_AMT_CUED_AFTER, 2)]
+    if bare:
+        pairs.append((_AMT_INT_BARE, 2))
+    for rx, ng in pairs:
+        for m in rx.finditer(text):
+            s = m.start(ng)
+            if s in seen:
+                continue
+            seen.add(s)
+            v = Decimal(re.sub(r"\D", "", m.group(ng)))
+            out.append((s, -v if m.group(1) else v))
+    return [v for _, v in sorted(out)]
+
+
+# A printed discount/shipping line between the subtotal and the total means
+# total = subtotal - discount + shipping + VAT, so plain s + v = t no longer holds.
+# "Less VAT 27.50" is a VAT exclusion, not a discount.
+_DISC_LINE = re.compile(r"^\s*(?:less|discount|rebate|deduction|trade\s+discount)\b(?!\W*?(?:vat|tax|gst)\b)", re.I)
+_SHIP_LINE = re.compile(r"^\s*(?:shipping|freight|carriage|handling|delivery\s+charges?|courier|postage|freight\s+out)\b", re.I)
 
 
 _IBAN_ANY = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]{2}\d{2}(?:[ \-]?[A-Za-z0-9]){11,34}")
@@ -158,43 +200,90 @@ def find_trns(text: str) -> tuple[str | None, str | None]:
 def find_amounts_arith(text: str, uae_only: bool = False):
     """Label-free: find subtotal, VAT and total by the arithmetic that must hold on a tax invoice
     (total = subtotal + VAT). UAE 5% is tried first; otherwise any rate from 1% to 30% is accepted
-    when the total is the largest amount on the page. Works on any layout."""
-    amts = [a for a in _amounts(text) if a > 0]
-    best = None
-    for i, s in enumerate(amts):
+    when the total is the largest amount on the page. A printed discount or shipping line between the
+    subtotal row and the total row is folded into the equation (total = subtotal - discount + shipping
+    + VAT; VAT is then expected to be 5% of the net when the page reads as UAE). A match that needed a
+    discount/shipping line outranks an unadjusted one, because item rows can also add up to the subtotal
+    by luck (and, with a discount, the true total is not the largest amount on the page). Works on any
+    layout; amounts with no decimals are used when the page has no decimal amounts at all."""
+    lines = text.splitlines()
+    disc_rows = {n for n, l in enumerate(lines) if _DISC_LINE.match(l)}
+    ship_rows = {n for n, l in enumerate(lines) if _SHIP_LINE.match(l)}
+    raw = [(n, a) for n, l in enumerate(lines) for a in _amounts(l)]
+    if not raw:
+        raw = [(n, a) for n, l in enumerate(lines) for a in _int_money(l)]
+    positions = [i for i, (n, a) in enumerate(raw) if a > 0]
+    amts = [raw[i][1] for i in positions]
+    if not amts:
+        return None
+
+    def between(i: int, k: int):
+        d = sh = Decimal("0")
+        for ri in range(i + 1, k):
+            n, a = raw[ri]
+            if n in disc_rows:
+                d += abs(a)
+            elif n in ship_rows:
+                sh += abs(a)
+        return d, sh
+
+    q2 = lambda x: x.quantize(Decimal("0.01"))
+    best = None  # (subtotal, vat, total, row): an unadjusted s + vat = total match
+    adj = None   # (subtotal, vat, total, row): a match saved by a printed discount/shipping line
+    for u, i in enumerate(positions):
+        s = raw[i][1]
         v_exp = (s * Decimal("0.05")).quantize(Decimal("0.01"))
-        for j in range(i + 1, min(i + 6, len(amts))):
-            v = amts[j]
-            if abs(v - v_exp) > Decimal("0.01"):
-                continue
-            for k in range(j + 1, min(j + 6, len(amts))):
-                if abs(s + v - amts[k]) <= Decimal("0.01"):
-                    if best is None or amts[k] >= best[2]:
-                        best = (s, v, amts[k])
+        for w in range(u + 1, min(u + 6, len(amts))):
+            j = positions[w]
+            v = raw[j][1]
+            for x in range(w + 1, min(w + 6, len(amts))):
+                k = positions[x]
+                t = raw[k][1]
+                if abs(s + v - t) <= Decimal("0.01"):
+                    if abs(v - v_exp) <= Decimal("0.01") and (best is None or (t, k) > (best[2], best[3])):
+                        best = (s, v, t, k)
+                else:
+                    D, Sh = between(i, k)
+                    if (D or Sh) and abs(s - D + Sh + v - t) <= Decimal("0.01") \
+                            and (abs(v - v_exp) <= Decimal("0.01") or (s - D > 0 and abs(v - ((s - D) * Decimal("0.05")).quantize(Decimal("0.01"))) <= Decimal("0.01"))) \
+                            and (adj is None or (t, k) > (adj[2], adj[3])):
+                        adj = (s, v, t, k)
     if best or uae_only or not amts:
-        return best
+        return (best[0], best[1], best[2]) if best else None
     top = max(amts)
-    for i, s in enumerate(amts):
-        for j in range(i + 1, min(i + 6, len(amts))):
-            v = amts[j]
+    for u, i in enumerate(positions):
+        s = raw[i][1]
+        for w in range(u + 1, min(u + 6, len(amts))):
+            j = positions[w]
+            v = raw[j][1]
             if not Decimal("0.01") <= v / s <= Decimal("0.30"):
                 continue
-            for k in range(j + 1, min(j + 6, len(amts))):
-                if amts[k] == top and abs(s + v - top) <= Decimal("0.01"):
-                    best = (s, v, top)
-    return best
+            for x in range(w + 1, min(w + 6, len(amts))):
+                k = positions[x]
+                t = raw[k][1]
+                if abs(s + v - t) <= Decimal("0.01"):
+                    if t == top and (best is None or (t, k) > (best[2], best[3])):
+                        best = (s, v, t, k)
+                else:
+                    d, sh = between(i, k)
+                    if (d or sh) and abs(s - d + sh + v - t) <= Decimal("0.01") \
+                            and (adj is None or (t, k) > (adj[2], adj[3])):
+                        adj = (s, v, t, k)
+    winner = adj if adj else best
+    return (winner[0], winner[1], winner[2]) if winner else None
 
 
 def find_amounts(text: str):
     arith = find_amounts_arith(text)
     if arith:
         return arith
+    doc_cents = bool(_amounts(text))  # the document prints two-decimal amounts somewhere
     sub = None
     vat = None  # (priority, line no, amount): a "VAT" line beats GST / sales tax / plain "tax"; the first line wins a tie
     tot = None  # (priority, line no, amount): the most specific total label wins, the lowest line on a tie
     for n, line in enumerate(text.splitlines()):
         lo = line.lower().replace("_", " ")
-        amt = _last_amount(line)
+        amt = _last_amount(line, doc_cents)
         if amt is None:
             continue
         if any(k in lo for k in SUB_KEYS):
@@ -433,12 +522,17 @@ def _header_candidates(lines: list[str]) -> list[str]:
     """Company-looking names in the issuer block: everything above the Bill To / customer block."""
     out = []
     for l in lines:
-        if _CUST.search(l):
-            break
-        chunks = [_clean_name(ch) for ch in re.split(r"\s{3,}", l)] + [_clean_name(re.sub(r"\s+", " ", l))]
-        ok = [c for c in chunks if _is_company(c)]
+        chunks = [_clean_name(ch) for ch in re.split(r"\s{3,}", l)]
+        ok = []
+        for c in chunks:
+            if _CUST.search(c):
+                break
+            if _is_company(c):
+                ok.append(c)
         if ok:
             out.append(max(ok, key=len))
+        if _CUST.search(l):
+            break
     return out
 
 
@@ -495,15 +589,88 @@ def _name_above_address(lines: list[str]) -> str | None:
     """Layouts with no label and no company suffix: the issuer's name is the line just above its 'Address:' line."""
     for i, l in enumerate(lines):
         if i and re.match(r"address\s*:", l, re.I):
-            c = _clean_name(re.sub(r"\s+", " ", lines[i - 1]))
-            if c and not re.search(r"\d|invoice|bill|date", c, re.I) and not _CUST.search(c) and not _NOT_NAME.search(c) and len(c.split()) <= 6:
+            c = _clean_name(lines[i - 1])
+            if (c and re.search(r"[A-Za-z]{2}", c) and not re.search(r"\d|invoice|bill|date", c, re.I)
+                    and not _CUST.search(c) and not _NOT_NAME.search(c) and not _PLAIN_BAD.search(c)
+                    and len(c.split()) <= 6):
                 return c
             return None
     return None
 
 
+_DOC_TITLE = re.compile(r"^\s*(?:tax\s+invoice|invoice|bill|statement|receipt|quotation)\s*[:\-]?\s*$", re.I)
+_PLAIN_BAD = re.compile(
+    r"\b(?:date|invoice|inv|bill|statement|receipt|quotation|proforma|delivery|original|copy|page|"
+    r"number|no|ref|terms|due|payment|payable|note|contact|email|phone|tel|address|vat|trn|"
+    r"total|amount|subtotal|tax|thank|thanks|welcome)\b", re.I)
+
+
+def _plain_candidate(l: str) -> str | None:
+    c = _clean_name(l)
+    if not c or not re.search(r"[A-Za-z]{2}", c) or re.match(r"^(?:mr|mrs|ms|miss)\.?\s", c, re.I):
+        return None
+    if re.search(r"\d|@|https?://|www\.", c, re.I) or _PLAIN_BAD.search(c) or _NOT_NAME.search(c):
+        return None
+    if len(c.split()) > 6:
+        return None
+    if len(c.split()) >= 2 or "-" in c:
+        return c
+    return None
+
+
+def _plain_header_name(lines: list[str]) -> str | None:
+    """No suffix, no label, no Address line: the issuer name is usually the first plain line under the document title."""
+    start = None
+    for i, l in enumerate(lines):
+        if _CUST.search(l):
+            break
+        if _DOC_TITLE.match(l):
+            start = i + 1
+            break
+    if start is None:
+        return None
+    for l in lines[start:start + 6]:
+        if _CUST.search(l):
+            break
+        c = _plain_candidate(l)
+        if c:
+            return c
+    return None
+
+
+def _plain_header_above_title(lines: list[str]) -> str | None:
+    for i, l in enumerate(lines):
+        if _CUST.search(l):
+            break
+        if _DOC_TITLE.match(l):
+            for prev in lines[:i]:
+                c = _plain_candidate(prev)
+                if c:
+                    return c
+            break
+    return None
+
+
+def _plain_issuer_name(lines: list[str]) -> str | None:
+    for l in lines:
+        for part in re.split(r"\s{3,}", l):
+            if _CUST.search(part):
+                return None
+            c = _plain_candidate(part)
+            if c:
+                return c
+    return None
+
+
 def find_supplier(text: str) -> str | None:
-    """Supplier (issuer) name. Evidence, strongest first: an explicit 'Supplier:'/'From:' label; a company-suffixed
+    return find_supplier_detail(text)[0]
+
+
+def find_supplier_detail(text: str) -> tuple[str | None, bool]:
+    """(name, confident). Confident means the name came from a label, a company-suffixed header, or the payment account name. The position-based
+    fallbacks (the line above 'Address:', the first plain line under the document title, ...) can pick the wrong text, so their answer is
+    returned as not confident and the checks that act on the name (the FTA name check) must not raise a red flag from it.
+    Supplier (issuer) name. Evidence, strongest first: an explicit 'Supplier:'/'From:' label; a company-suffixed
     name in the header (above the Bill To block) that agrees with the payment 'Account name:'; the account name
     itself when the header is unreadable or disagrees; otherwise the first company-suffixed header name."""
     lines = [l.strip() for l in text.splitlines() if l.strip()]
@@ -511,23 +678,30 @@ def find_supplier(text: str) -> str | None:
     lab = _labelled_supplier(lines)
     heads = _header_candidates(lines)
     if lab and acc and _key(lab) != _key(acc) and _close(lab, acc):
-        return _merge_reads(lab, acc)
+        return _merge_reads(lab, acc), True
     if lab and (not acc or _key(lab) == _key(acc) or not _is_company(acc) or _is_company(lab)):
-        return lab
+        return lab, True
     if acc and _is_company(acc):
         for h in heads:
             if _key(h) == _key(acc):
-                return h
+                return h, True
         # OCR: the header and the account line can each carry a few misread letters. A header name that
         # nearly matches the account name is the same company: merge the two reads word by word.
         close = [h for h in heads if _close(h, acc)]
-        return _merge_reads(close[0], acc) if close else acc
+        return (_merge_reads(close[0], acc) if close else acc), True
     if heads:
-        return heads[0]
-    return lab or acc or _name_above_address(lines)
+        return heads[0], True
+    if lab or acc:
+        return (lab or acc), True
+    for guess in (_name_above_address, _plain_header_name, _plain_issuer_name, _plain_header_above_title):
+        name = guess(lines)
+        if name:
+            return name, False
+    return None, True
 
 
 def _clean_name(l: str) -> str:
+    l = re.sub(r"^\s*[A-Za-z]?[<>\[\]()'\"|@#%*+=~‘’“”]{1,2}\s+", "", l)
     l = re.split(r"\s{3,}|\s*(?:tax\s*invoice|invoice\s*\(tax\)|invoice|inv\.|bill\s*no|reference|document\s*no|date|issue\b|due\b|serial\b|our\s+ref\b|ref(?:\.|\b))", l, flags=re.I)[0]
     return l.strip(" :")
 
@@ -537,14 +711,16 @@ def parse(text: str) -> Invoice:
     s_trn, c_trn = find_trns(text)
     sub, vat, tot = find_amounts(text)
     amounts_by_arith = find_amounts_arith(text) is not None
+    supplier, supplier_ok = find_supplier_detail(text)
     inv = Invoice(
-        supplier_name=find_supplier(text), supplier_trn=s_trn, customer_trn=c_trn, iban=iban,
+        supplier_name=supplier, supplier_trn=s_trn, customer_trn=c_trn, iban=iban,
         invoice_number=find_invoice_number(text), invoice_date=find_date(text),
         subtotal=sub, vat=vat, total=tot,
         is_tax_invoice_titled=bool(re.search(r"tax\s*invoice|invoice\s*\(tax\)", text, re.I)), raw_text=text,
     )
     inv.extra["iban_confident"] = iban_ok
     inv.extra["amounts_confident"] = amounts_by_arith
+    inv.extra["supplier_confident"] = supplier_ok
     return inv
 
 

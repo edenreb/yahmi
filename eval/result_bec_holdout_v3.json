@@ -1,0 +1,196 @@
+{
+ "dataset": "data/bec_holdout_v3.json",
+ "n": 189,
+ "fraud": 129,
+ "legit": 60,
+ "dataset_caveats": [
+  "Fraud is real published email text from Penn State, Hope College and Carnegie Mellon archives.",
+  "Genuine is published transactional email templates (Magento, OpenMage, Odoo, Crater), not captured customer emails; placeholders remain.",
+  "English only. Sources are new relative to training/v2; max text similarity to any training/v2/public-CSV item was <0.70 before freezing.",
+  "attack_type labels are coarse and not hand-verified for every item; per-type numbers are descriptive only."
+ ],
+ "models": {
+  "bec_final": {
+   "n_fraud": 129,
+   "n_legit": 60,
+   "fraud_caught_amber": 69,
+   "fraud_caught_red": 17,
+   "false_alarms_amber": 26,
+   "false_alarms_red": 3,
+   "auc": 0.54,
+   "amber_ci": [
+    44.9,
+    61.9
+   ],
+   "red_ci": [
+    8.4,
+    20.1
+   ],
+   "fa_amber_ci": [
+    31.6,
+    55.9
+   ],
+   "fa_red_ci": [
+    1.7,
+    13.7
+   ],
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8,
+   "fraud_by_attack_type": {
+    "credential": {
+     "n": 50,
+     "amber": 27,
+     "red": 6
+    },
+    "document_share": {
+     "n": 22,
+     "amber": 9,
+     "red": 1
+    },
+    "invoice": {
+     "n": 6,
+     "amber": 1,
+     "red": 1
+    },
+    "job_scam": {
+     "n": 2,
+     "amber": 0,
+     "red": 0
+    },
+    "other": {
+     "n": 29,
+     "amber": 18,
+     "red": 6
+    },
+    "payment_lure": {
+     "n": 7,
+     "amber": 2,
+     "red": 0
+    },
+    "payroll": {
+     "n": 13,
+     "amber": 12,
+     "red": 3
+    }
+   },
+   "legit_by_source": {
+    "crater": {
+     "n": 1,
+     "amber": 1,
+     "red": 0
+    },
+    "magento": {
+     "n": 14,
+     "amber": 9,
+     "red": 1
+    },
+    "odoo": {
+     "n": 21,
+     "amber": 5,
+     "red": 1
+    },
+    "openmage": {
+     "n": 24,
+     "amber": 11,
+     "red": 1
+    }
+   }
+  },
+  "bec_v6": {
+   "n_fraud": 129,
+   "n_legit": 60,
+   "fraud_caught_amber": 86,
+   "fraud_caught_red": 29,
+   "false_alarms_amber": 42,
+   "false_alarms_red": 4,
+   "auc": 0.538,
+   "amber_ci": [
+    58.2,
+    74.2
+   ],
+   "red_ci": [
+    16.1,
+    30.4
+   ],
+   "fa_amber_ci": [
+    57.5,
+    80.1
+   ],
+   "fa_red_ci": [
+    2.6,
+    15.9
+   ],
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8,
+   "fraud_by_attack_type": {
+    "credential": {
+     "n": 50,
+     "amber": 32,
+     "red": 11
+    },
+    "document_share": {
+     "n": 22,
+     "amber": 16,
+     "red": 6
+    },
+    "invoice": {
+     "n": 6,
+     "amber": 4,
+     "red": 0
+    },
+    "job_scam": {
+     "n": 2,
+     "amber": 0,
+     "red": 0
+    },
+    "other": {
+     "n": 29,
+     "amber": 19,
+     "red": 8
+    },
+    "payment_lure": {
+     "n": 7,
+     "amber": 2,
+     "red": 0
+    },
+    "payroll": {
+     "n": 13,
+     "amber": 13,
+     "red": 4
+    }
+   },
+   "legit_by_source": {
+    "crater": {
+     "n": 1,
+     "amber": 1,
+     "red": 0
+    },
+    "magento": {
+     "n": 14,
+     "amber": 11,
+     "red": 1
+    },
+    "odoo": {
+     "n": 21,
+     "amber": 13,
+     "red": 1
+    },
+    "openmage": {
+     "n": 24,
+     "amber": 17,
+     "red": 2
+    }
+   }
+  }
+ },
+ "decision": {
+  "rule": "promote only if v6 amber caught >= live, v6 amber false alarms <= live, v6 red false alarms <= live",
+  "checks": {
+   "v6_amber_caught_at_least_live": true,
+   "v6_amber_false_no_more_than_live": false,
+   "v6_red_false_no_more_than_live": false
+  },
+  "promote_v6": false,
+  "note": "Template-proxy genuine side; do not promote on this set alone. Live model stays unless a human accepts the caveat."
+ }
+}
