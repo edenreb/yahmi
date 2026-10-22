@@ -41,6 +41,23 @@ def test_amount_layouts():
     assert find_amounts("Subtotal $400.00\nVAT 5% $20.00\nTotal $420.00") == (Decimal("400.00"), Decimal("20.00"), Decimal("420.00"))
 
 
+def test_amounts_without_decimals():
+    # a document whose money is printed without fils: grouped thousands are amounts anywhere
+    assert find_amounts("Subtotal (AED) 14,240,766\nVAT (AED) 712,038\nTotal (AED) 14,952,804") == (Decimal("14240766"), Decimal("712038"), Decimal("14952804"))
+    # ungrouped integers count when a currency code is attached
+    assert find_amounts("Subtotal AED 1250\nVAT AED 63\nTotal AED 1313") == (Decimal("1250.00"), Decimal("63.00"), Decimal("1313.00"))
+    assert find_amounts("Net Total 1250\nVAT 63\nGross 1313") == (Decimal("1250.00"), Decimal("63.00"), Decimal("1313.00"))
+    # one integer-only line in an otherwise two-decimal document: reconciliation, not guessing
+    assert find_amounts("Subtotal 1,250\nVAT 62.50\nTotal 1,312.50") == (Decimal("1250.00"), Decimal("62.50"), Decimal("1312.50"))
+    # percentages, dates and day counts are not amounts
+    assert find_amounts("Tax rate: 5%\nInvoice date: 26/10/2026\nTotal due: 30 days") == (None, None, None)
+
+
+def test_discount_and_shipping_reconcile_the_total():
+    assert find_amounts("Sub Total 1,000.00\nDiscount (100.00)\nTax (5%) 45.00\nTotal 945.00") == (Decimal("1000.00"), Decimal("45.00"), Decimal("945.00"))
+    assert find_amounts("Sub Total 5,624.80\nDiscount (843.72)\nTax (5%) 239.05\nShipping 222.00\nBalance Due 5,242.13\nItem 7x 740.56\nAmount 5,183.92") == (Decimal("5624.80"), Decimal("239.05"), Decimal("5242.13"))
+
+
 def test_foreign_tax_ids_are_not_trns():
     assert find_trns("Tax ID: 12-3456789\nVAT No. DE123456789") == (None, None)
     assert find_trns("TRN 100234567800003")[0] == "100234567800003"
@@ -49,6 +66,18 @@ def test_foreign_tax_ids_are_not_trns():
 def test_supplier_without_uae_suffix():
     assert find_supplier("Northwind Traders Ltd\n12 High Street\nBill To: Acme Corp") == "Northwind Traders Ltd"
     assert find_supplier("Kuala Tech Sdn Bhd\nJalan 1\nBill To: Foo") == "Kuala Tech Sdn Bhd"
+
+
+def test_supplier_plain_header_under_document_title():
+    text = "INVOICE\nKirk, Murphy and Daniels\nDate: 03-Mar-2002\nINVOICE ID INV16291505\nBILL_TO:\nSarah Ross"
+    assert find_supplier(text) == "Kirk, Murphy and Daniels"
+    assert find_supplier("TAX INVOICE\nNorthwind Traders\nDate: 03-Mar-2002") == "Northwind Traders"
+    assert find_supplier("INVOICE\nDate: 03-Mar-2002\nBILL TO:\nAcme Trading LLC") is None
+    assert find_supplier("ORI,\nGraham, Carrillo and Stark   -_ 2)\nAddress:8110 Lee Haven\nBill To: Acme") == "Graham, Carrillo and Stark"
+    assert find_supplier("White and Sons   (eZ SN\nwww.WhiteandSons.org\nTAX INVOICE\nBuyer: Kimberly Kent") == "White and Sons"
+    assert find_supplier("E> Yoder LLC\nAddress: 1 Main St\nBill To: Acme") == "Yoder LLC"
+    assert find_supplier("INVOICE\n@) Navarro, Ford and Bryan   INVOICE ID 7637-774\nBill to: James") == "Navarro, Ford and Bryan"
+    assert find_supplier("INVOICE\nMrs. Yolanda Moses   Morton-Leach\nBill to: James") == "Morton-Leach"
 
 
 def test_numeric_date_order_follows_the_document():
@@ -66,3 +95,15 @@ def test_numeric_date_order_follows_the_document():
 def test_vat_line_beats_gst_line_when_both_are_printed():
     text = "SUB_TOTAL : 240.85 $\nGST (18%) : 43.35\nTAX:VAT (5.99%): 14.42 $\nTOTAL : 248.94 $"
     assert find_amounts(text) == (Decimal("240.85"), Decimal("14.42"), Decimal("248.94"))
+
+
+def test_supplier_name_says_how_sure_it_is():
+    from yahmi.extract import find_supplier_detail, parse
+    assert find_supplier_detail("TAX INVOICE\nFalcon Building Materials LLC\nAl Quoz, Dubai\nBill To: Sample Customer LLC\n") == ("Falcon Building Materials LLC", True)
+    assert find_supplier_detail("Seller:   Client:\nBradley-Andrade   Castro PLC\n9879 Elizabeth Common\n") == ("Bradley-Andrade", True)
+    assert find_supplier_detail("Payment details\nAccount name: Falcon Building Materials LLC\nIBAN: x\n") == ("Falcon Building Materials LLC", True)
+    # position-based guesses (no label, no company suffix) can pick the wrong text: reported as not confident
+    assert find_supplier_detail("INVOICE\nBarnes, Garcia and Martin\nAddress:13868 Michael Wall\nBill to: Suzanne\n") == ("Barnes, Garcia and Martin", False)
+    assert find_supplier_detail("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n") == ("Northwind Traders", False)
+    assert parse("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n").extra["supplier_confident"] is False
+    assert parse("TAX INVOICE\nFalcon Building Materials LLC\nAl Quoz, Dubai\nBill To: Acme\n").extra["supplier_confident"] is True

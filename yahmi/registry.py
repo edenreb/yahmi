@@ -158,14 +158,15 @@ class FtaTrnClient:
         return TrnResult("found", en, ar) if (en or ar) else TrnResult("not_found", detail="no name returned")
 
 
-def check_trn_registry(supplier_name: str | None, trn: str | None, client: FtaTrnClient) -> list[Finding]:
-    """Findings from comparing the invoice's supplier name with the name the FTA has registered for the TRN."""
+def check_trn_registry(supplier_name: str | None, trn: str | None, client: FtaTrnClient, name_confident: bool = True) -> list[Finding]:
+    """Findings from comparing the invoice's supplier name with the name the FTA has registered for the TRN. When the reader was not sure it read the
+    supplier name correctly (name_confident=False), a mismatch is only amber: the wrong text may have been read, not a wrong supplier."""
     digits = re.sub(r"\D", "", trn or "")
     if len(digits) != 15:
         return []  # no usable TRN: check_trn already says so
     if not client.configured:
         return [Finding("trn_registry", "info", "The official FTA name check for this TRN is not connected yet in this build.", SOURCE)]
-    return [_labelled(f, client.simulated) for f in _compare(supplier_name, digits, client)]
+    return [_labelled(f, client.simulated) for f in _compare(supplier_name, digits, client, name_confident)]
 
 
 def _labelled(f: Finding, simulated: bool) -> Finding:
@@ -175,7 +176,7 @@ def _labelled(f: Finding, simulated: bool) -> Finding:
     return Finding(f.check, f.level, "SIMULATION: " + f.message, SIM_SOURCE)
 
 
-def _compare(supplier_name: str | None, digits: str, client: FtaTrnClient) -> list[Finding]:
+def _compare(supplier_name: str | None, digits: str, client: FtaTrnClient, name_confident: bool = True) -> list[Finding]:
     res = client.lookup(digits)
     if res.status == "unavailable":
         return [Finding("trn_registry", "info", "The FTA TRN service did not answer, so the supplier name was not checked against it.", SOURCE)]
@@ -189,4 +190,6 @@ def _compare(supplier_name: str | None, digits: str, client: FtaTrnClient) -> li
         return [Finding("trn_registry", "green", f"The TRN is registered to {reg}, which matches the supplier name on the invoice.", SOURCE)]
     if score >= MATCH_AMBER:
         return [Finding("trn_registry", "amber", f"The TRN is registered to {reg}; the invoice says {supplier_name}. The names are similar but not the same, so confirm with the supplier.", SOURCE)]
+    if not name_confident:
+        return [Finding("trn_registry", "amber", f"The TRN is registered to {reg}. We could not read the supplier name on this invoice reliably (we read \"{supplier_name}\"), so please check that it is the same company.", SOURCE)]
     return [Finding("trn_registry", "red", f"The TRN on this invoice is registered to {reg}, not {supplier_name}. Verify with the supplier on a number you already trust.", SOURCE)]

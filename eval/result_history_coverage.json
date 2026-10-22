@@ -1,0 +1,175 @@
+[
+ {
+  "file": "bec_realworld.json",
+  "n_fraud": 46,
+  "totals": {
+   "n": 46,
+   "with_account": 3,
+   "new_or_changed": 11,
+   "ai_miss": 1,
+   "ai_miss_with_account": 0,
+   "ai_miss_with_account_new_or_changed": 0
+  },
+  "by_attack": {
+   "unknown": {
+    "n": 46,
+    "with_account": 3,
+    "new_or_changed": 11,
+    "ai_miss": 1,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   }
+  },
+  "note": "aggregate counts only; per-record previews printed to the console for manual review"
+ },
+ {
+  "file": "bec_realworld_more.json",
+  "n_fraud": 166,
+  "totals": {
+   "n": 166,
+   "with_account": 3,
+   "new_or_changed": 15,
+   "ai_miss": 0,
+   "ai_miss_with_account": 0,
+   "ai_miss_with_account_new_or_changed": 0
+  },
+  "by_attack": {
+   "fake_invoice": {
+    "n": 28,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "other": {
+    "n": 18,
+    "with_account": 0,
+    "new_or_changed": 2,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "recon": {
+    "n": 5,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "ceo_wire": {
+    "n": 26,
+    "with_account": 2,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "gift_card": {
+    "n": 46,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "invoice_thread": {
+    "n": 11,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "payroll": {
+    "n": 23,
+    "with_account": 0,
+    "new_or_changed": 6,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "bank_change": {
+    "n": 9,
+    "with_account": 1,
+    "new_or_changed": 7,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   }
+  },
+  "note": "aggregate counts only; per-record previews printed to the console for manual review"
+ },
+ {
+  "file": "bec_more2.json",
+  "n_fraud": 81,
+  "totals": {
+   "n": 81,
+   "with_account": 3,
+   "new_or_changed": 5,
+   "ai_miss": 0,
+   "ai_miss_with_account": 0,
+   "ai_miss_with_account_new_or_changed": 0
+  },
+  "by_attack": {
+   "invoice_thread": {
+    "n": 6,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "fake_invoice": {
+    "n": 28,
+    "with_account": 1,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "ceo_wire": {
+    "n": 3,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "bank_change": {
+    "n": 15,
+    "with_account": 1,
+    "new_or_changed": 5,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "other": {
+    "n": 13,
+    "with_account": 1,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "payroll": {
+    "n": 11,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   },
+   "gift_card": {
+    "n": 5,
+    "with_account": 0,
+    "new_or_changed": 0,
+    "ai_miss": 0,
+    "ai_miss_with_account": 0,
+    "ai_miss_with_account_new_or_changed": 0
+   }
+  },
+  "note": "aggregate counts only; per-record previews printed to the console for manual review"
+ }
+]

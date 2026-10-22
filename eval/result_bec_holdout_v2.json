@@ -1,0 +1,625 @@
+{
+ "n": 136,
+ "fraud": 76,
+ "legit": 60,
+ "models": {
+  "bec_final": {
+   "n": 76,
+   "fraud_caught_amber": 43,
+   "fraud_caught_red": 13,
+   "false_alarms_amber": 1,
+   "false_alarms_red": 0,
+   "auc": 0.971,
+   "amber_ci": [
+    45.4,
+    67.1
+   ],
+   "red_ci": [
+    10.3,
+    27.1
+   ],
+   "fa_ci": [
+    0.3,
+    8.9
+   ],
+   "fraud_by_attack_type": {
+    "account_lock": {
+     "n": 5,
+     "amber": 4,
+     "red": 1
+    },
+    "fake_payment_received": {
+     "n": 11,
+     "amber": 7,
+     "red": 3
+    },
+    "gift_card": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice_payment_request": {
+     "n": 23,
+     "amber": 10,
+     "red": 4
+    },
+    "legacy_419": {
+     "n": 4,
+     "amber": 3,
+     "red": 0
+    },
+    "overdue_statement": {
+     "n": 4,
+     "amber": 1,
+     "red": 0
+    },
+    "payroll": {
+     "n": 10,
+     "amber": 9,
+     "red": 3
+    },
+    "purchase_order_proforma": {
+     "n": 12,
+     "amber": 9,
+     "red": 2
+    },
+    "tax_demand": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wire_transfer_advice": {
+     "n": 5,
+     "amber": 0,
+     "red": 0
+    }
+   },
+   "legit_by_attack_type": {
+    "AP process change notice": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "February invoice volume check": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "GL cost centre numbers": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "accounting system cutover": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "accounts payable correspondence": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "bank change letter template": {
+     "n": 4,
+     "amber": 1,
+     "red": 0
+    },
+    "bankruptcy accounting query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "confirming an invoice day volume": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "contract signature question": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "corporate shell company query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "counterparty bankruptcy risk": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "counterparty suspended in portal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "deal ticket correction": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "demand fee adjustments on deal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense allocation query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report approval": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report cleared for payment": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report form update": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report status check": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "hotel reservation confirmation": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice email template": {
+     "n": 3,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice exchange software launch note": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice module testing sign-off": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice processing cutoff": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "legal/lawsuit update": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "market invoice default advisory": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "misdirected payment email": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "office facilities notice": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "overdue reminder template": {
+     "n": 7,
+     "amber": 0,
+     "red": 0
+    },
+    "payment approval authorization": {
+     "n": 3,
+     "amber": 0,
+     "red": 0
+    },
+    "pre-approval for payment mechanics": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "project closing congratulations": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "purchase and sale agreement": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "quarterly fee statement routing": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "reducing payment to supplier": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "reducing supplier payment": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier being overbilled": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier rate change on deal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier rate corrected": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "temp worker billing approval": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "three months of charges on one report": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "urgent check replacement via wire": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "vendor background check clause": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wire coding correction": {
+     "n": 2,
+     "amber": 0,
+     "red": 0
+    },
+    "wire in signature queue": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wrong-company payment query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    }
+   },
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8
+  },
+  "bec_v5": {
+   "n": 76,
+   "fraud_caught_amber": 43,
+   "fraud_caught_red": 13,
+   "false_alarms_amber": 1,
+   "false_alarms_red": 0,
+   "auc": 0.971,
+   "amber_ci": [
+    45.4,
+    67.1
+   ],
+   "red_ci": [
+    10.3,
+    27.1
+   ],
+   "fa_ci": [
+    0.3,
+    8.9
+   ],
+   "fraud_by_attack_type": {
+    "account_lock": {
+     "n": 5,
+     "amber": 4,
+     "red": 1
+    },
+    "fake_payment_received": {
+     "n": 11,
+     "amber": 7,
+     "red": 3
+    },
+    "gift_card": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice_payment_request": {
+     "n": 23,
+     "amber": 10,
+     "red": 4
+    },
+    "legacy_419": {
+     "n": 4,
+     "amber": 3,
+     "red": 0
+    },
+    "overdue_statement": {
+     "n": 4,
+     "amber": 1,
+     "red": 0
+    },
+    "payroll": {
+     "n": 10,
+     "amber": 9,
+     "red": 3
+    },
+    "purchase_order_proforma": {
+     "n": 12,
+     "amber": 9,
+     "red": 2
+    },
+    "tax_demand": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wire_transfer_advice": {
+     "n": 5,
+     "amber": 0,
+     "red": 0
+    }
+   },
+   "legit_by_attack_type": {
+    "AP process change notice": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "February invoice volume check": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "GL cost centre numbers": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "accounting system cutover": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "accounts payable correspondence": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "bank change letter template": {
+     "n": 4,
+     "amber": 1,
+     "red": 0
+    },
+    "bankruptcy accounting query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "confirming an invoice day volume": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "contract signature question": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "corporate shell company query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "counterparty bankruptcy risk": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "counterparty suspended in portal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "deal ticket correction": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "demand fee adjustments on deal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense allocation query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report approval": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report cleared for payment": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report form update": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "expense report status check": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "hotel reservation confirmation": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice email template": {
+     "n": 3,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice exchange software launch note": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice module testing sign-off": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "invoice processing cutoff": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "legal/lawsuit update": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "market invoice default advisory": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "misdirected payment email": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "office facilities notice": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "overdue reminder template": {
+     "n": 7,
+     "amber": 0,
+     "red": 0
+    },
+    "payment approval authorization": {
+     "n": 3,
+     "amber": 0,
+     "red": 0
+    },
+    "pre-approval for payment mechanics": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "project closing congratulations": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "purchase and sale agreement": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "quarterly fee statement routing": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "reducing payment to supplier": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "reducing supplier payment": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier being overbilled": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier rate change on deal": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "supplier rate corrected": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "temp worker billing approval": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "three months of charges on one report": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "urgent check replacement via wire": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "vendor background check clause": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wire coding correction": {
+     "n": 2,
+     "amber": 0,
+     "red": 0
+    },
+    "wire in signature queue": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    },
+    "wrong-company payment query": {
+     "n": 1,
+     "amber": 0,
+     "red": 0
+    }
+   },
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8
+  },
+  "both": {
+   "amber_union_caught": 43,
+   "red_union_caught": 13,
+   "amber_union_false": 1,
+   "red_union_false": 0
+  }
+ }
+}
