@@ -17,3 +17,5 @@ reportlab==5.0.1
 schwifty==2026.7.3
 pytest==9.1.1
 httpx==0.28.1
+# list refresh only (tools/update_sanctions.py reads the UAE .xls)
+xlrd==2.0.2
