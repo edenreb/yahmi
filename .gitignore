@@ -38,3 +38,6 @@ fta-api-docs/
 # real pilot data must never be inside the repo
 pilot_data/
 eval/pilot_*/
+
+# private bundle of models and email datasets fetched over the private channel (never committed)
+yahmi-private-data/

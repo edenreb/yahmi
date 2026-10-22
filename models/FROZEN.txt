@@ -2,3 +2,5 @@
 af1eef98fda3773e75fba78151e6a00b92325df5e0221c11087cc38caa06db8f  yahmi/email_checks.py
 9ae618bbce1714e116089c6678dbfc44aa055c6672b72ce6236fd008c18d7dfc  yahmi/cues.py
 frozen_at=2026-10-19T23:48:56+04:00 amber_threshold=0.62 red_threshold=0.80 test_file=data/bec_frozen_test.json (collected after freeze)
+ef056d4434a665f6b9abbab6a7fbdfffc999fd6fef72443ea0ae27e2a880bc18  data/bec_holdout_v2.json  (n=136 fraud=76 legit=60) frozen_at=2026-10-21T22:35:06+04:00
+e61a47d9347773427984ff14ea6404d0b79359981f5abc8729d26a4853434c67  models/bec_final.joblib  promoted_from=models/candidates/bec_v5.joblib at 2026-10-21T22:39:04+04:00 after bec_holdout_v2 decision rule passed (amber 43>=31, genuine amber 1<=1, red 0<=0); old live archived as models/archive/bec_final_v4_2.joblib

@@ -77,21 +77,22 @@ A check a UAE small business runs **before paying a supplier invoice**:
 
 | File | Status | What |
 |---|---|---|
-| `models/bec_final.joblib` | **Live** (frozen 2026-10-19, see `FROZEN.txt`) | Mean of three models, all trained on 348 real emails plus public phishing and synthetic emails: (1) bge-small-en-v1.5 embeddings + 0.5×cue flags → HistGradientBoosting; (2) logistic regression on the same features; (3) TF-IDF logistic regression on the real emails. |
+| `models/bec_final.joblib` | **Live** (promoted 2026-10-21 after passing the pre-registered holdout decision rule; see `FROZEN.txt`; previously this file held the v4 model, now archived as `models/archive/bec_final_v4_2.joblib`) | Same recipe as the old live model, trained on 348 + 114 + 160 new emails: mean of (1) bge-small-en-v1.5 embeddings + 0.5×cue flags → HistGradientBoosting; (2) logistic regression on the same features; (3) TF-IDF logistic regression on the real emails. |
 | `models/bec_multi.joblib` | **Live for Arabic** | paraphrase-multilingual-MiniLM-L12-v2 embeddings + cues → logistic regression, trained on English only. Used when more than 30% of the letters are Arabic. |
-| `models/candidates/bec_v5.joblib` | **Candidate, not validated** | Same recipe as `bec_final`, trained on 348 + 114 + 160 new emails. Beat the live model on the fair comparison (`eval/result_more2_before_after.json`): AUC 0.874 → 0.908, amber 48 → 54 caught of 81 with false alarms 9 → 7 of 77, red 24 → 34 caught with false alarms 4 → 2. Not promoted until a new untouched test exists. |
+| `models/candidates/bec_v5.joblib` | Identical bytes to the live model (kept as provenance) | Same recipe; the file that was promoted. |
 | `models/archive/*` | Old | Earlier versions, kept for reference. |
 
 Note: the `FROZEN.txt` hashes for `email_checks.py` and `cues.py` were taken before the rename. The model file hash is still valid.
 
-## Measured results (as of 2026-10-20)
+## Measured results (as of 2026-10-21)
 
 **Fraud-email AI**
-- **Frozen test:** 114 real emails from sources never used, collected after freezing; 62 fraud, 52 genuine.
-  - Amber or red: caught 53/62 (85%), with 2/52 false alarms.
-  - Red only: caught 31/62, with 0/52 false alarms.
-  - AUC 0.97.
-  - Weak spot: invoice-type fraud emails were caught at amber (12/14) but never at red.
+- **Untouched holdout v2 (new decision run, thresholds amber 0.62 / red 0.80):** 136 real emails from sources never used for training (Nazario mboxes 2024–2025, Phishing-Email-Dataset mirrors, fresh Enron rows, vendor invoice templates); 76 fraud, 60 genuine. Scored once after freezing (`models/FROZEN.txt`).
+  - Live model (`bec_final`, promoted from `bec_v5`): amber or red caught 43/76 (57%, Wilson 95% CI 45–67%), with 1/60 false alarms.
+  - Red only: caught 13/76, with 0/60 false alarms.
+  - AUC 0.971.
+  - Outcome of the pre-registered rule: the live model is now the promoted `bec_v5` (amber 43 ≥ 31, genuine amber 1 ≤ 1, genuine red 0 ≤ 0). The previous model's numbers on the same set, kept for the decision: amber 31/76, red 6/76, false alarms 1/60 amber and 0/60 red, AUC 0.938. Caveats: mostly-English set; the Arabic class is thin here (no Arabic holdout yet); catch rate is lower than on the older frozen test because this set is campaign-heavy modern phishing rather than invoice-style BEC.
+- **Frozen test (previous model, 2026-10-20):** 114 real emails; 62 fraud, 52 genuine. Amber or red 53/62 (85%) with 2/52 false alarms; red 31/62 with 0/52; AUC 0.97; invoice-type fraud caught at amber (12/14) but never at red. These numbers belong to the previous model, not the promoted one.
 - **Development:** 348 real emails, leave-one-source-out cross-validation. AUC 0.93.
 - **Arabic:** 82 real messages, mostly SMS/WhatsApp scams versus formal notices.
   - Amber or red: 23/41 caught, 4/41 false alarms. AUC 0.78.
