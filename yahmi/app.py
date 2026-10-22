@@ -15,6 +15,7 @@ from .extract import extract
 from .memory import Memory, supplier_id
 from .registry import FtaTrnClient, check_trn_registry
 from .rules import check_invoice
+from .sanctions import Sanctions, check_sanctions
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app = FastAPI(title="Yahmi")
@@ -59,6 +60,7 @@ if os.path.exists(BEC_PATH):
             return np.column_stack([1 - p, p])
 
     BEC = _Ensemble()
+SANCT = Sanctions.load()  # public sanctions lists (data/sanctions/entries.json); None means not loaded and the check stays silent
 ORDER = {"red": 0, "amber": 1, "green": 2, "info": 3}
 
 
@@ -83,7 +85,8 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     """Core check used by the web app and WhatsApp."""
     inv = extract(path)
     findings = check_invoice(inv)
-    findings += check_trn_registry(inv.supplier_name, inv.supplier_trn, FTA)
+    findings += check_sanctions(inv.supplier_name, SANCT)
+    findings += check_trn_registry(inv.supplier_name, inv.supplier_trn, FTA, inv.extra.get("supplier_confident", True))
     if inv.iban and not inv.extra.get("iban_confident"):
         findings.insert(0, _f("iban_read", "amber", "We could not read the IBAN with certainty. Please type it in to confirm.", "Yahmi reader"))
     em = parse_email(email_text) if email_text.strip() else None
@@ -97,7 +100,8 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     findings.sort(key=lambda f: ORDER.get(f.level, 9))
     return {
         "verdict": verdict(findings),
-        "invoice": {k: (str(v) if v is not None else None) for k, v in inv.__dict__.items() if k not in ("raw_text", "extra")},
+        "invoice": {**{k: (str(v) if v is not None else None) for k, v in inv.__dict__.items() if k not in ("raw_text", "extra")},
+                    "supplier_confident": inv.extra.get("supplier_confident", True)},
         "read_method": inv.extra.get("method"),
         "findings": [f.to_dict() for f in findings],
     }

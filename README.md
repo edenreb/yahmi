@@ -79,6 +79,11 @@ domain, the first email from a sender domain that asks to change bank details, a
 check is on by default and asks the domain's registry (public RDAP record, found through the IANA bootstrap file) for the registration date; only
 the domain name is sent, nothing else leaves the machine, and `YAHMI_DOMAIN_AGE=0` turns it off. Top-level domains with no RDAP service, notably `.ae`,
 get no answer and no request. A plain forwarded text has no headers, and the verdict says so instead of guessing.
+## Sanctions screening
+
+Yahmi screens the supplier name against the UN Security Council Consolidated List and the UAE Local Terrorist List (name check only, not proof).
+Download the lists with `python3 tools/update_sanctions.py` (needs `xlrd`); without them the check stays silent. Sources, matching rules, measured
+results and limits: `docs/SANCTIONS.md`.
 
 ## WhatsApp setup (Meta WhatsApp Cloud API)
 

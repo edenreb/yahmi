@@ -88,3 +88,14 @@ def test_cache_and_daily_limit():
     api_calls = [u for u, _ in gw2.calls if not u.endswith("getAccessToken")]
     assert len(api_calls) == DAILY_LIMIT
     assert c2.lookup("199999999999999").status == "unavailable"
+
+
+def test_unsure_supplier_name_never_makes_a_red_flag():
+    c = client(FakeGateway())
+    sure = check_trn_registry("Blue Creek Logistics LLC", TRN, c)[0]
+    unsure = check_trn_registry("Blue Creek Logistics LLC", TRN, c, name_confident=False)[0]
+    assert sure.level == "red" and unsure.level == "amber"
+    assert "could not read the supplier name" in unsure.message and "AlFuttaim Group" in unsure.message
+    # a clear match is still green even when the name read was a guess, and a close-but-different name stays amber
+    assert check_trn_registry("Al-Futtaim Group L.L.C", TRN, c, name_confident=False)[0].level == "green"
+    assert check_trn_registry("AlFuttaim Trading Group", TRN, c, name_confident=False)[0].level == "amber"
