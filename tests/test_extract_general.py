@@ -95,3 +95,15 @@ def test_numeric_date_order_follows_the_document():
 def test_vat_line_beats_gst_line_when_both_are_printed():
     text = "SUB_TOTAL : 240.85 $\nGST (18%) : 43.35\nTAX:VAT (5.99%): 14.42 $\nTOTAL : 248.94 $"
     assert find_amounts(text) == (Decimal("240.85"), Decimal("14.42"), Decimal("248.94"))
+
+
+def test_supplier_name_says_how_sure_it_is():
+    from yahmi.extract import find_supplier_detail, parse
+    assert find_supplier_detail("TAX INVOICE\nFalcon Building Materials LLC\nAl Quoz, Dubai\nBill To: Sample Customer LLC\n") == ("Falcon Building Materials LLC", True)
+    assert find_supplier_detail("Seller:   Client:\nBradley-Andrade   Castro PLC\n9879 Elizabeth Common\n") == ("Bradley-Andrade", True)
+    assert find_supplier_detail("Payment details\nAccount name: Falcon Building Materials LLC\nIBAN: x\n") == ("Falcon Building Materials LLC", True)
+    # position-based guesses (no label, no company suffix) can pick the wrong text: reported as not confident
+    assert find_supplier_detail("INVOICE\nBarnes, Garcia and Martin\nAddress:13868 Michael Wall\nBill to: Suzanne\n") == ("Barnes, Garcia and Martin", False)
+    assert find_supplier_detail("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n") == ("Northwind Traders", False)
+    assert parse("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n").extra["supplier_confident"] is False
+    assert parse("TAX INVOICE\nFalcon Building Materials LLC\nAl Quoz, Dubai\nBill To: Acme\n").extra["supplier_confident"] is True

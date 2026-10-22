@@ -81,7 +81,7 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     """Core check used by the web app and WhatsApp."""
     inv = extract(path)
     findings = check_invoice(inv)
-    findings += check_trn_registry(inv.supplier_name, inv.supplier_trn, FTA)
+    findings += check_trn_registry(inv.supplier_name, inv.supplier_trn, FTA, inv.extra.get("supplier_confident", True))
     if inv.iban and not inv.extra.get("iban_confident"):
         findings.insert(0, _f("iban_read", "amber", "We could not read the IBAN with certainty. Please type it in to confirm.", "Yahmi reader"))
     em = parse_email(email_text) if email_text.strip() else None
@@ -95,7 +95,8 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     findings.sort(key=lambda f: ORDER.get(f.level, 9))
     return {
         "verdict": verdict(findings),
-        "invoice": {k: (str(v) if v is not None else None) for k, v in inv.__dict__.items() if k not in ("raw_text", "extra")},
+        "invoice": {**{k: (str(v) if v is not None else None) for k, v in inv.__dict__.items() if k not in ("raw_text", "extra")},
+                    "supplier_confident": inv.extra.get("supplier_confident", True)},
         "read_method": inv.extra.get("method"),
         "findings": [f.to_dict() for f in findings],
     }

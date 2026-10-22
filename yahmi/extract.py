@@ -663,7 +663,14 @@ def _plain_issuer_name(lines: list[str]) -> str | None:
 
 
 def find_supplier(text: str) -> str | None:
-    """Supplier (issuer) name. Evidence, strongest first: an explicit 'Supplier:'/'From:' label; a company-suffixed
+    return find_supplier_detail(text)[0]
+
+
+def find_supplier_detail(text: str) -> tuple[str | None, bool]:
+    """(name, confident). Confident means the name came from a label, a company-suffixed header, or the payment account name. The position-based
+    fallbacks (the line above 'Address:', the first plain line under the document title, ...) can pick the wrong text, so their answer is
+    returned as not confident and the checks that act on the name (the FTA name check) must not raise a red flag from it.
+    Supplier (issuer) name. Evidence, strongest first: an explicit 'Supplier:'/'From:' label; a company-suffixed
     name in the header (above the Bill To block) that agrees with the payment 'Account name:'; the account name
     itself when the header is unreadable or disagrees; otherwise the first company-suffixed header name."""
     lines = [l.strip() for l in text.splitlines() if l.strip()]
@@ -671,21 +678,26 @@ def find_supplier(text: str) -> str | None:
     lab = _labelled_supplier(lines)
     heads = _header_candidates(lines)
     if lab and acc and _key(lab) != _key(acc) and _close(lab, acc):
-        return _merge_reads(lab, acc)
+        return _merge_reads(lab, acc), True
     if lab and (not acc or _key(lab) == _key(acc) or not _is_company(acc) or _is_company(lab)):
-        return lab
+        return lab, True
     if acc and _is_company(acc):
         for h in heads:
             if _key(h) == _key(acc):
-                return h
+                return h, True
         # OCR: the header and the account line can each carry a few misread letters. A header name that
         # nearly matches the account name is the same company: merge the two reads word by word.
         close = [h for h in heads if _close(h, acc)]
-        return _merge_reads(close[0], acc) if close else acc
+        return (_merge_reads(close[0], acc) if close else acc), True
     if heads:
-        return heads[0]
-    return (lab or acc or _name_above_address(lines) or _plain_header_name(lines)
-            or _plain_issuer_name(lines) or _plain_header_above_title(lines))
+        return heads[0], True
+    if lab or acc:
+        return (lab or acc), True
+    for guess in (_name_above_address, _plain_header_name, _plain_issuer_name, _plain_header_above_title):
+        name = guess(lines)
+        if name:
+            return name, False
+    return None, True
 
 
 def _clean_name(l: str) -> str:
@@ -699,14 +711,16 @@ def parse(text: str) -> Invoice:
     s_trn, c_trn = find_trns(text)
     sub, vat, tot = find_amounts(text)
     amounts_by_arith = find_amounts_arith(text) is not None
+    supplier, supplier_ok = find_supplier_detail(text)
     inv = Invoice(
-        supplier_name=find_supplier(text), supplier_trn=s_trn, customer_trn=c_trn, iban=iban,
+        supplier_name=supplier, supplier_trn=s_trn, customer_trn=c_trn, iban=iban,
         invoice_number=find_invoice_number(text), invoice_date=find_date(text),
         subtotal=sub, vat=vat, total=tot,
         is_tax_invoice_titled=bool(re.search(r"tax\s*invoice|invoice\s*\(tax\)", text, re.I)), raw_text=text,
     )
     inv.extra["iban_confident"] = iban_ok
     inv.extra["amounts_confident"] = amounts_by_arith
+    inv.extra["supplier_confident"] = supplier_ok
     return inv
 
 
