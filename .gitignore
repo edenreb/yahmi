@@ -41,6 +41,8 @@ fta-api-docs/
 pilot_data/
 eval/pilot_*/
 
+# public sanctions lists downloaded locally (refresh with tools/update_sanctions.py)
+data/sanctions/
 # private bundle of models and email datasets fetched over the private channel (never committed)
 yahmi-private-data/
 

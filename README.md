@@ -71,6 +71,12 @@ Try `tests/fixtures/wrong_trn.pdf` (the supplier's name with a TRN the simulated
 "SIMULATION:" and cite "SIMULATED registry (... NOT the Federal Tax Authority)". Never present them as FTA data. For the real service set
 `YAHMI_FTA_API_KEY`, `YAHMI_FTA_CLIENT_ID` and `YAHMI_FTA_CLIENT_SECRET` and leave `YAHMI_FTA_BASE_URL` / `YAHMI_FTA_TOKEN_URL` unset.
 
+## Sanctions screening
+
+Yahmi screens the supplier name against the UN Security Council Consolidated List and the UAE Local Terrorist List (name check only, not proof).
+Download the lists with `python3 tools/update_sanctions.py` (needs `xlrd`); without them the check stays silent. Sources, matching rules, measured
+results and limits: `docs/SANCTIONS.md`.
+
 ## WhatsApp setup (Meta WhatsApp Cloud API)
 
 1. Create a Meta developer app with the WhatsApp product and get a test phone number.
