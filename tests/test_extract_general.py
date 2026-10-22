@@ -41,6 +41,23 @@ def test_amount_layouts():
     assert find_amounts("Subtotal $400.00\nVAT 5% $20.00\nTotal $420.00") == (Decimal("400.00"), Decimal("20.00"), Decimal("420.00"))
 
 
+def test_amounts_without_decimals():
+    # a document whose money is printed without fils: grouped thousands are amounts anywhere
+    assert find_amounts("Subtotal (AED) 14,240,766\nVAT (AED) 712,038\nTotal (AED) 14,952,804") == (Decimal("14240766"), Decimal("712038"), Decimal("14952804"))
+    # ungrouped integers count when a currency code is attached
+    assert find_amounts("Subtotal AED 1250\nVAT AED 63\nTotal AED 1313") == (Decimal("1250.00"), Decimal("63.00"), Decimal("1313.00"))
+    assert find_amounts("Net Total 1250\nVAT 63\nGross 1313") == (Decimal("1250.00"), Decimal("63.00"), Decimal("1313.00"))
+    # one integer-only line in an otherwise two-decimal document: reconciliation, not guessing
+    assert find_amounts("Subtotal 1,250\nVAT 62.50\nTotal 1,312.50") == (Decimal("1250.00"), Decimal("62.50"), Decimal("1312.50"))
+    # percentages, dates and day counts are not amounts
+    assert find_amounts("Tax rate: 5%\nInvoice date: 26/10/2026\nTotal due: 30 days") == (None, None, None)
+
+
+def test_discount_and_shipping_reconcile_the_total():
+    assert find_amounts("Sub Total 1,000.00\nDiscount (100.00)\nTax (5%) 45.00\nTotal 945.00") == (Decimal("1000.00"), Decimal("45.00"), Decimal("945.00"))
+    assert find_amounts("Sub Total 5,624.80\nDiscount (843.72)\nTax (5%) 239.05\nShipping 222.00\nBalance Due 5,242.13\nItem 7x 740.56\nAmount 5,183.92") == (Decimal("5624.80"), Decimal("239.05"), Decimal("5242.13"))
+
+
 def test_foreign_tax_ids_are_not_trns():
     assert find_trns("Tax ID: 12-3456789\nVAT No. DE123456789") == (None, None)
     assert find_trns("TRN 100234567800003")[0] == "100234567800003"

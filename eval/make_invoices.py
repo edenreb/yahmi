@@ -1,7 +1,9 @@
 """Generate a labelled set of synthetic UAE tax invoices for measuring extraction accuracy.
 
 Usage: python3 make_invoices.py OUT_DIR N SEED TEMPLATES
-  TEMPLATES: comma-separated template ids (0-5). Hold some out to test layouts the parser never saw.
+  TEMPLATES: comma-separated template ids (0-14, but 9-14 were added after the parser was frozen: 12 prints all
+amounts with no decimals, 13 adds a discount line, 14 a discount and a shipping line). Hold some out to test
+layouts the parser never saw.
 Each invoice is saved as a digital PDF (text layer) and a degraded "phone photo" JPEG (no text layer),
 with ground truth in labels.json. Company names are invented.
 """
@@ -55,6 +57,11 @@ def money(x):
     return f"{x:,.2f}"
 
 
+def money0(x):
+    """Amounts with no decimals: fils dropped / a currency printed without decimal places."""
+    return f"{x:,.0f}"
+
+
 def q2(x):
     return x.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
@@ -67,13 +74,28 @@ def one(i):
     inv_no = rnd.choice(["INV-", "TI-", "", "No. ", "INV/2026/"]) + str(rnd.randint(1000, 99999))
     d = f"{rnd.randint(1, 28):02d}/{rnd.randint(1, 12):02d}/2026"
     lines = []
-    for _ in range(rnd.randint(1, 5)):
-        qty = rnd.randint(1, 40)
-        unit = Decimal(rnd.randint(500, 250000)) / 100
-        lines.append((rnd.choice(ITEMS), qty, unit, q2(unit * qty)))
+    if t == 12:
+        for _ in range(rnd.randint(1, 5)):
+            qty = rnd.randint(1, 40)
+            unit = Decimal(rnd.randint(500, 250000))  # pillars of a no-decimal invoice: integer amounts
+            lines.append((rnd.choice(ITEMS), qty, unit, unit * qty))
+    else:
+        for _ in range(rnd.randint(1, 5)):
+            qty = rnd.randint(1, 40)
+            unit = Decimal(rnd.randint(500, 250000)) / 100
+            lines.append((rnd.choice(ITEMS), qty, unit, q2(unit * qty)))
     sub = sum(l[3] for l in lines)
     vat = q2(sub * Decimal("0.05"))
     tot = sub + vat
+    disc = ship = Decimal("0")
+    if t == 12:
+        vat = vat.quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+        tot = sub + vat
+    elif t in (13, 14):
+        disc = q2(sub * Decimal(rnd.randint(5, 18)) / 100)
+        vat = q2((sub - disc) * Decimal("0.05"))
+        ship = q2(Decimal(rnd.randint(20, 400))) if t == 14 else Decimal("0")
+        tot = sub - disc + vat + ship
     path = os.path.join(OUT, f"inv_{i:04d}.pdf")
     c = canvas.Canvas(path, pagesize=A4)
     W, H = A4
@@ -91,6 +113,9 @@ def one(i):
         10: dict(title="TAX INVOICE", trn="Supplier Tax Registration (TRN)", iban="Account (IBAN)", sub="Taxable Value", vat="5% VAT", tot="Invoice Total AED", no="Bill Number", date="Billing Date"),
         11: dict(title="Tax Invoice - Original", trn="TRN Number", iban="IBAN for payment", sub="Net Total", vat="VAT Amount (5%)", tot="Gross Total", no="Tax Invoice No.", date="Date"),
         9: dict(title="Commercial Tax Invoice", trn="Tax ID", iban="Remit to IBAN", sub="Goods & Services", vat="Output VAT", tot="To Pay", no="Serial", date="On"),
+        12: dict(title="TAX INVOICE", trn="TRN:", iban="IBAN:", sub="Subtotal (AED)", vat="VAT (AED)", tot="Total (AED)", no="Invoice No:", date="Date:"),
+        13: dict(title="TAX INVOICE", trn="VAT Reg. No:", iban="Account IBAN:", sub="Sub Total", vat="VAT (5%)", tot="Amount Due AED", no="Invoice Number", date="Invoice Date:"),
+        14: dict(title="TAX INVOICE", trn="Supplier TRN", iban="Pay to IBAN", sub="Sub Total", vat="Tax (5%)", tot="Balance Due", no="Document No", date="Dated"),
     }[t]
     font = ["Helvetica", "Times-Roman", "Courier"][t % 3]
     bold = {"Helvetica": "Helvetica-Bold", "Times-Roman": "Times-Bold", "Courier": "Courier-Bold"}[font]
@@ -110,7 +135,7 @@ def one(i):
     elif t in (6, 7):
         tx(W - 260, y, name, bold, 13); tx(W - 260, y - 15, rnd.choice(CITIES)); tx(W - 260, y - 29, f"{lab['trn']} {s_trn}")
         tx(40, y, lab["title"], bold, 16); tx(40, y - 20, f"{lab['no']} {inv_no}"); tx(40, y - 34, f"{lab['date']} {d}")
-    elif t in (0, 2, 4):
+    elif t in (0, 2, 4, 12, 13, 14):
         tx(40, y, name, bold, 15); tx(40, y - 16, rnd.choice(CITIES)); tx(40, y - 30, f"{lab['trn']} {s_trn}")
         tx(W - 200, y, lab["title"], bold, 14); tx(W - 200, y - 18, f"{lab['no']} {inv_no}"); tx(W - 200, y - 32, f"{lab['date']} {d}")
     else:
@@ -122,12 +147,19 @@ def one(i):
     tx(40, y, "Bill To:", bold); tx(40, y - 14, cust); tx(40, y - 28, f"Customer TRN: {c_trn}")
     y -= 60
     tx(40, y, "Description", bold); tx(300, y, "Qty", bold); tx(360, y, "Unit Price", bold); tx(460, y, "Amount", bold)
+    sig = money0 if t == 12 else money
+    mf = (lambda x: "AED " + money(x)) if t == 8 else sig
     for desc, qty, unit, amt in lines:
-        y -= 16; tx(40, y, desc); tx(300, y, str(qty)); tx(360, y, money(unit)); tx(460, y, money(amt))
+        y -= 16; tx(40, y, desc); tx(300, y, str(qty)); tx(360, y, sig(unit)); tx(460, y, sig(amt))
     y -= 30
-    mf = (lambda x: "AED " + money(x)) if t == 8 else money
+    disc_style = rnd.choice(["-", "()"]) if t in (13, 14) else "-"
     tx(340, y, lab["sub"]); tx(450, y, mf(sub)); y -= 15
+    if t in (13, 14):
+        ds = ("-" + mf(disc)) if disc_style == "-" else f"({mf(disc)})"
+        tx(340, y, "Discount"); tx(450, y, ds, bold); y -= 15
     tx(340, y, lab["vat"]); tx(450, y, mf(vat)); y -= 15
+    if t == 14:
+        tx(340, y, "Shipping"); tx(450, y, mf(ship)); y -= 15
     tx(340, y, lab["tot"], bold); tx(450, y, mf(tot), bold)
     y -= 50
     tx(40, y, "Payment details", bold); y -= 15
@@ -144,7 +176,8 @@ def one(i):
     img = img.filter(ImageFilter.GaussianBlur(rnd.uniform(0.3, 1.0)))
     img.save(path.replace(".pdf", ".jpg"), quality=rnd.choice([55, 70, 85]))
     return dict(file=os.path.basename(path), template=t, supplier_name=name, supplier_trn=s_trn, customer_trn=c_trn, iban=iban,
-                invoice_number=inv_no.strip(), invoice_date=d, subtotal=str(sub), vat=str(vat), total=str(tot))
+                invoice_number=inv_no.strip(), invoice_date=d, subtotal=str(sub), vat=str(vat), total=str(tot),
+                discount=str(disc) if t in (13, 14) else None, shipping=str(ship) if t == 14 else None)
 
 
 labels = [one(i) for i in range(N)]

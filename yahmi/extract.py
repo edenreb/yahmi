@@ -14,9 +14,9 @@ from .rules import IBAN_LENGTHS, Invoice, iban_valid
 
 SUFFIX = (r"(?:L\.?L\.?C\.?|FZ-?LLC|FZE|FZCO|Est\.?|Establishment|Co\.?\s*LLC|PJSC|Trading|Company"
           r"|Pty\.?\s*Ltd\.?|Sdn\.?\s*Bhd\.?|Pvt\.?\s*Ltd\.?|Ltd\.?|Limited|Inc\.?|Incorporated|Corp\.?|Corporation|LLP|GmbH|PLC|S\.A\.|B\.V\.|S\.?R\.?L\.?|SARL)")
-SUB_KEYS = ["sub total", "subtotal", "taxable", "net amount", "excl", "before vat", "amount before"]
+SUB_KEYS = ["sub total", "subtotal", "net total", "taxable", "net amount", "excl", "before vat", "amount before"]
 VAT_KEYS = ["vat", "value added tax", "gst", "sales tax", "tax"]
-TOT_KEYS = ["grand total", "total due", "amount due", "amount payable", "balance due", "incl", "total"]
+TOT_KEYS = ["grand total", "total due", "amount due", "amount payable", "balance due", "gross", "incl", "total"]
 NOT_VAT = ["tax invoice", "tax reg", "registration", "incl", "excl", "before", "taxable", "trn"]
 
 
@@ -99,9 +99,51 @@ def _amounts(text: str) -> list[Decimal]:
     return out
 
 
-def _last_amount(line: str) -> Decimal | None:
+def _last_amount(line: str, doc_cents: bool = True) -> Decimal | None:
     a = _amounts(line)
+    if not a:
+        a = _int_money(line, bare=not doc_cents)
     return a[-1] if a else None
+
+
+# Amounts written without decimal places (fils dropped, or a currency printed in whole units).
+# Thousand-grouped integers ("1,234", "1 234 567", "1.234") count anywhere; an ungrouped "1250"
+# counts when a currency code or symbol is attached ("AED 1250", "$ 1250", "1250 AED"), or when
+# the whole document has no decimal amounts at all and the line carries a money label.
+# Percent signs, dates ("26/10"), phone-number chains and TRN digits never match.
+_CUE = r"(?:(?:AED|USD|EUR|GBP|SAR|QAR|OMR|KWD|BHD|EGP|Dhs?|Dirhams?)(?![A-Za-z])|[$£€¥])"
+_AMT_NO_DEC = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(\d{1,3}(?:[ \u00a0',.]\d{3})+)(?!\d|[.,]\d|\s?\d)")
+_AMT_CUED_BEFORE = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(?:" + _CUE + r")\s{0,2}(\d+)(?!\d|[.,]\d|\s?\d)", re.I)
+_AMT_CUED_AFTER = re.compile(r"(?<![\w.,'])(\(?\s?-)?\s?(\d+)(?!\d|[.,]\d|\s?\d)\W{0,3}(?:" + _CUE + r")(?![-A-Za-z])", re.I)
+_AMT_INT_BARE = re.compile(
+    r"(?<![\w.,'])(\(?\s?-)?\s?(\d+)(?!\d|[.,]\d|\s?\d)"
+    r"(?!\s{0,2}%)(?!\s{0,2}(?:days?|nights?|hrs?|hours?|minutes?|items?|pieces?|pcs|units?|kg|tons?|months?|years?|weeks?|n[o0]s?\.?)\b)",
+    re.I)
+
+
+def _int_money(text: str, bare: bool = False) -> list[Decimal]:
+    """Money with no decimal places, in document order (grouped thousands; cued plain integers;
+    bare integers only when the caller says the document has no decimal amounts anywhere)."""
+    out, seen = [], set()
+    pairs = [(_AMT_NO_DEC, 2), (_AMT_CUED_BEFORE, 2), (_AMT_CUED_AFTER, 2)]
+    if bare:
+        pairs.append((_AMT_INT_BARE, 2))
+    for rx, ng in pairs:
+        for m in rx.finditer(text):
+            s = m.start(ng)
+            if s in seen:
+                continue
+            seen.add(s)
+            v = Decimal(re.sub(r"\D", "", m.group(ng)))
+            out.append((s, -v if m.group(1) else v))
+    return [v for _, v in sorted(out)]
+
+
+# A printed discount/shipping line between the subtotal and the total means
+# total = subtotal - discount + shipping + VAT, so plain s + v = t no longer holds.
+# "Less VAT 27.50" is a VAT exclusion, not a discount.
+_DISC_LINE = re.compile(r"^\s*(?:less|discount|rebate|deduction|trade\s+discount)\b(?!\W*?(?:vat|tax|gst)\b)", re.I)
+_SHIP_LINE = re.compile(r"^\s*(?:shipping|freight|carriage|handling|delivery\s+charges?|courier|postage|freight\s+out)\b", re.I)
 
 
 _IBAN_ANY = re.compile(r"(?<![A-Za-z0-9])[A-Za-z]{2}\d{2}(?:[ \-]?[A-Za-z0-9]){11,34}")
@@ -158,43 +200,90 @@ def find_trns(text: str) -> tuple[str | None, str | None]:
 def find_amounts_arith(text: str, uae_only: bool = False):
     """Label-free: find subtotal, VAT and total by the arithmetic that must hold on a tax invoice
     (total = subtotal + VAT). UAE 5% is tried first; otherwise any rate from 1% to 30% is accepted
-    when the total is the largest amount on the page. Works on any layout."""
-    amts = [a for a in _amounts(text) if a > 0]
-    best = None
-    for i, s in enumerate(amts):
+    when the total is the largest amount on the page. A printed discount or shipping line between the
+    subtotal row and the total row is folded into the equation (total = subtotal - discount + shipping
+    + VAT; VAT is then expected to be 5% of the net when the page reads as UAE). A match that needed a
+    discount/shipping line outranks an unadjusted one, because item rows can also add up to the subtotal
+    by luck (and, with a discount, the true total is not the largest amount on the page). Works on any
+    layout; amounts with no decimals are used when the page has no decimal amounts at all."""
+    lines = text.splitlines()
+    disc_rows = {n for n, l in enumerate(lines) if _DISC_LINE.match(l)}
+    ship_rows = {n for n, l in enumerate(lines) if _SHIP_LINE.match(l)}
+    raw = [(n, a) for n, l in enumerate(lines) for a in _amounts(l)]
+    if not raw:
+        raw = [(n, a) for n, l in enumerate(lines) for a in _int_money(l)]
+    positions = [i for i, (n, a) in enumerate(raw) if a > 0]
+    amts = [raw[i][1] for i in positions]
+    if not amts:
+        return None
+
+    def between(i: int, k: int):
+        d = sh = Decimal("0")
+        for ri in range(i + 1, k):
+            n, a = raw[ri]
+            if n in disc_rows:
+                d += abs(a)
+            elif n in ship_rows:
+                sh += abs(a)
+        return d, sh
+
+    q2 = lambda x: x.quantize(Decimal("0.01"))
+    best = None  # (subtotal, vat, total, row): an unadjusted s + vat = total match
+    adj = None   # (subtotal, vat, total, row): a match saved by a printed discount/shipping line
+    for u, i in enumerate(positions):
+        s = raw[i][1]
         v_exp = (s * Decimal("0.05")).quantize(Decimal("0.01"))
-        for j in range(i + 1, min(i + 6, len(amts))):
-            v = amts[j]
-            if abs(v - v_exp) > Decimal("0.01"):
-                continue
-            for k in range(j + 1, min(j + 6, len(amts))):
-                if abs(s + v - amts[k]) <= Decimal("0.01"):
-                    if best is None or amts[k] >= best[2]:
-                        best = (s, v, amts[k])
+        for w in range(u + 1, min(u + 6, len(amts))):
+            j = positions[w]
+            v = raw[j][1]
+            for x in range(w + 1, min(w + 6, len(amts))):
+                k = positions[x]
+                t = raw[k][1]
+                if abs(s + v - t) <= Decimal("0.01"):
+                    if abs(v - v_exp) <= Decimal("0.01") and (best is None or (t, k) > (best[2], best[3])):
+                        best = (s, v, t, k)
+                else:
+                    D, Sh = between(i, k)
+                    if (D or Sh) and abs(s - D + Sh + v - t) <= Decimal("0.01") \
+                            and (abs(v - v_exp) <= Decimal("0.01") or (s - D > 0 and abs(v - ((s - D) * Decimal("0.05")).quantize(Decimal("0.01"))) <= Decimal("0.01"))) \
+                            and (adj is None or (t, k) > (adj[2], adj[3])):
+                        adj = (s, v, t, k)
     if best or uae_only or not amts:
-        return best
+        return (best[0], best[1], best[2]) if best else None
     top = max(amts)
-    for i, s in enumerate(amts):
-        for j in range(i + 1, min(i + 6, len(amts))):
-            v = amts[j]
+    for u, i in enumerate(positions):
+        s = raw[i][1]
+        for w in range(u + 1, min(u + 6, len(amts))):
+            j = positions[w]
+            v = raw[j][1]
             if not Decimal("0.01") <= v / s <= Decimal("0.30"):
                 continue
-            for k in range(j + 1, min(j + 6, len(amts))):
-                if amts[k] == top and abs(s + v - top) <= Decimal("0.01"):
-                    best = (s, v, top)
-    return best
+            for x in range(w + 1, min(w + 6, len(amts))):
+                k = positions[x]
+                t = raw[k][1]
+                if abs(s + v - t) <= Decimal("0.01"):
+                    if t == top and (best is None or (t, k) > (best[2], best[3])):
+                        best = (s, v, t, k)
+                else:
+                    d, sh = between(i, k)
+                    if (d or sh) and abs(s - d + sh + v - t) <= Decimal("0.01") \
+                            and (adj is None or (t, k) > (adj[2], adj[3])):
+                        adj = (s, v, t, k)
+    winner = adj if adj else best
+    return (winner[0], winner[1], winner[2]) if winner else None
 
 
 def find_amounts(text: str):
     arith = find_amounts_arith(text)
     if arith:
         return arith
+    doc_cents = bool(_amounts(text))  # the document prints two-decimal amounts somewhere
     sub = None
     vat = None  # (priority, line no, amount): a "VAT" line beats GST / sales tax / plain "tax"; the first line wins a tie
     tot = None  # (priority, line no, amount): the most specific total label wins, the lowest line on a tie
     for n, line in enumerate(text.splitlines()):
         lo = line.lower().replace("_", " ")
-        amt = _last_amount(line)
+        amt = _last_amount(line, doc_cents)
         if amt is None:
             continue
         if any(k in lo for k in SUB_KEYS):
