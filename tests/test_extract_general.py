@@ -68,6 +68,18 @@ def test_supplier_without_uae_suffix():
     assert find_supplier("Kuala Tech Sdn Bhd\nJalan 1\nBill To: Foo") == "Kuala Tech Sdn Bhd"
 
 
+def test_supplier_plain_header_under_document_title():
+    text = "INVOICE\nKirk, Murphy and Daniels\nDate: 03-Mar-2002\nINVOICE ID INV16291505\nBILL_TO:\nSarah Ross"
+    assert find_supplier(text) == "Kirk, Murphy and Daniels"
+    assert find_supplier("TAX INVOICE\nNorthwind Traders\nDate: 03-Mar-2002") == "Northwind Traders"
+    assert find_supplier("INVOICE\nDate: 03-Mar-2002\nBILL TO:\nAcme Trading LLC") is None
+    assert find_supplier("ORI,\nGraham, Carrillo and Stark   -_ 2)\nAddress:8110 Lee Haven\nBill To: Acme") == "Graham, Carrillo and Stark"
+    assert find_supplier("White and Sons   (eZ SN\nwww.WhiteandSons.org\nTAX INVOICE\nBuyer: Kimberly Kent") == "White and Sons"
+    assert find_supplier("E> Yoder LLC\nAddress: 1 Main St\nBill To: Acme") == "Yoder LLC"
+    assert find_supplier("INVOICE\n@) Navarro, Ford and Bryan   INVOICE ID 7637-774\nBill to: James") == "Navarro, Ford and Bryan"
+    assert find_supplier("INVOICE\nMrs. Yolanda Moses   Morton-Leach\nBill to: James") == "Morton-Leach"
+
+
 def test_numeric_date_order_follows_the_document():
     us = "Seller: Acme\n12 Elm St, Austin, TX 73301\nDate of issue: 10/01/2014\nTotal $ 40.00"
     assert find_date(us) == "01/10/2014"                      # US look, ambiguous: month-first

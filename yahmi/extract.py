@@ -522,12 +522,17 @@ def _header_candidates(lines: list[str]) -> list[str]:
     """Company-looking names in the issuer block: everything above the Bill To / customer block."""
     out = []
     for l in lines:
-        if _CUST.search(l):
-            break
-        chunks = [_clean_name(ch) for ch in re.split(r"\s{3,}", l)] + [_clean_name(re.sub(r"\s+", " ", l))]
-        ok = [c for c in chunks if _is_company(c)]
+        chunks = [_clean_name(ch) for ch in re.split(r"\s{3,}", l)]
+        ok = []
+        for c in chunks:
+            if _CUST.search(c):
+                break
+            if _is_company(c):
+                ok.append(c)
         if ok:
             out.append(max(ok, key=len))
+        if _CUST.search(l):
+            break
     return out
 
 
@@ -584,10 +589,76 @@ def _name_above_address(lines: list[str]) -> str | None:
     """Layouts with no label and no company suffix: the issuer's name is the line just above its 'Address:' line."""
     for i, l in enumerate(lines):
         if i and re.match(r"address\s*:", l, re.I):
-            c = _clean_name(re.sub(r"\s+", " ", lines[i - 1]))
-            if c and not re.search(r"\d|invoice|bill|date", c, re.I) and not _CUST.search(c) and not _NOT_NAME.search(c) and len(c.split()) <= 6:
+            c = _clean_name(lines[i - 1])
+            if (c and re.search(r"[A-Za-z]{2}", c) and not re.search(r"\d|invoice|bill|date", c, re.I)
+                    and not _CUST.search(c) and not _NOT_NAME.search(c) and not _PLAIN_BAD.search(c)
+                    and len(c.split()) <= 6):
                 return c
             return None
+    return None
+
+
+_DOC_TITLE = re.compile(r"^\s*(?:tax\s+invoice|invoice|bill|statement|receipt|quotation)\s*[:\-]?\s*$", re.I)
+_PLAIN_BAD = re.compile(
+    r"\b(?:date|invoice|inv|bill|statement|receipt|quotation|proforma|delivery|original|copy|page|"
+    r"number|no|ref|terms|due|payment|payable|note|contact|email|phone|tel|address|vat|trn|"
+    r"total|amount|subtotal|tax|thank|thanks|welcome)\b", re.I)
+
+
+def _plain_candidate(l: str) -> str | None:
+    c = _clean_name(l)
+    if not c or not re.search(r"[A-Za-z]{2}", c) or re.match(r"^(?:mr|mrs|ms|miss)\.?\s", c, re.I):
+        return None
+    if re.search(r"\d|@|https?://|www\.", c, re.I) or _PLAIN_BAD.search(c) or _NOT_NAME.search(c):
+        return None
+    if len(c.split()) > 6:
+        return None
+    if len(c.split()) >= 2 or "-" in c:
+        return c
+    return None
+
+
+def _plain_header_name(lines: list[str]) -> str | None:
+    """No suffix, no label, no Address line: the issuer name is usually the first plain line under the document title."""
+    start = None
+    for i, l in enumerate(lines):
+        if _CUST.search(l):
+            break
+        if _DOC_TITLE.match(l):
+            start = i + 1
+            break
+    if start is None:
+        return None
+    for l in lines[start:start + 6]:
+        if _CUST.search(l):
+            break
+        c = _plain_candidate(l)
+        if c:
+            return c
+    return None
+
+
+def _plain_header_above_title(lines: list[str]) -> str | None:
+    for i, l in enumerate(lines):
+        if _CUST.search(l):
+            break
+        if _DOC_TITLE.match(l):
+            for prev in lines[:i]:
+                c = _plain_candidate(prev)
+                if c:
+                    return c
+            break
+    return None
+
+
+def _plain_issuer_name(lines: list[str]) -> str | None:
+    for l in lines:
+        for part in re.split(r"\s{3,}", l):
+            if _CUST.search(part):
+                return None
+            c = _plain_candidate(part)
+            if c:
+                return c
     return None
 
 
@@ -613,10 +684,12 @@ def find_supplier(text: str) -> str | None:
         return _merge_reads(close[0], acc) if close else acc
     if heads:
         return heads[0]
-    return lab or acc or _name_above_address(lines)
+    return (lab or acc or _name_above_address(lines) or _plain_header_name(lines)
+            or _plain_issuer_name(lines) or _plain_header_above_title(lines))
 
 
 def _clean_name(l: str) -> str:
+    l = re.sub(r"^\s*[A-Za-z]?[<>\[\]()'\"|@#%*+=~‘’“”]{1,2}\s+", "", l)
     l = re.split(r"\s{3,}|\s*(?:tax\s*invoice|invoice\s*\(tax\)|invoice|inv\.|bill\s*no|reference|document\s*no|date|issue\b|due\b|serial\b|our\s+ref\b|ref(?:\.|\b))", l, flags=re.I)[0]
     return l.strip(" :")
 

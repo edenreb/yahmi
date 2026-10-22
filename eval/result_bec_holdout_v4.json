@@ -1,0 +1,189 @@
+{
+ "dataset": "data/bec_holdout_v4.json",
+ "n": 151,
+ "fraud": 91,
+ "legit": 60,
+ "dataset_caveats": [
+  "Fraud is real University of Chicago phishing email text (2020-2026), skewed to student/job/account-lock campaigns; only 7 invoice and 11 payroll items.",
+  "Genuine is 60 real GnuCash user mailing-list messages (2025-2026), filtered to business/accounting subjects; not captured supplier invoices.",
+  "New sources vs training/v2/v3; leakage check found 0 exact and 0 at cosine >=0.70.",
+  "Public blog/mailing-list terms, no explicit licence; local evaluation only.",
+  "attack_type labels are auto-tagged and not hand-verified."
+ ],
+ "models": {
+  "bec_final": {
+   "n_fraud": 91,
+   "n_legit": 60,
+   "fraud_caught_amber": 51,
+   "fraud_caught_red": 17,
+   "false_alarms_amber": 0,
+   "false_alarms_red": 0,
+   "auc": 0.969,
+   "amber_ci": [
+    45.8,
+    65.8
+   ],
+   "red_ci": [
+    12.0,
+    27.9
+   ],
+   "fa_amber_ci": [
+    -0.0,
+    6.0
+   ],
+   "fa_red_ci": [
+    -0.0,
+    6.0
+   ],
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8,
+   "by_attack_type": {
+    "account_lock": {
+     "n": 22,
+     "amber": 17,
+     "red": 3
+    },
+    "document_share": {
+     "n": 12,
+     "amber": 5,
+     "red": 1
+    },
+    "invoice": {
+     "n": 7,
+     "amber": 2,
+     "red": 1
+    },
+    "job_scam": {
+     "n": 21,
+     "amber": 8,
+     "red": 1
+    },
+    "other": {
+     "n": 18,
+     "amber": 10,
+     "red": 6
+    },
+    "payroll": {
+     "n": 11,
+     "amber": 9,
+     "red": 5
+    }
+   },
+   "by_source": {
+    "gnucash_user": {
+     "n": 60,
+     "fraud": 0,
+     "amber": 0,
+     "red": 0,
+     "legit": 60,
+     "legit_amber": 0,
+     "legit_red": 0
+    },
+    "uchicago": {
+     "n": 91,
+     "fraud": 91,
+     "amber": 51,
+     "red": 17,
+     "legit": 0,
+     "legit_amber": 0,
+     "legit_red": 0
+    }
+   }
+  },
+  "bec_v6": {
+   "n_fraud": 91,
+   "n_legit": 60,
+   "fraud_caught_amber": 55,
+   "fraud_caught_red": 24,
+   "false_alarms_amber": 0,
+   "false_alarms_red": 0,
+   "auc": 0.966,
+   "amber_ci": [
+    50.2,
+    69.9
+   ],
+   "red_ci": [
+    18.4,
+    36.3
+   ],
+   "fa_amber_ci": [
+    -0.0,
+    6.0
+   ],
+   "fa_red_ci": [
+    -0.0,
+    6.0
+   ],
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8,
+   "by_attack_type": {
+    "account_lock": {
+     "n": 22,
+     "amber": 18,
+     "red": 8
+    },
+    "document_share": {
+     "n": 12,
+     "amber": 6,
+     "red": 3
+    },
+    "invoice": {
+     "n": 7,
+     "amber": 2,
+     "red": 1
+    },
+    "job_scam": {
+     "n": 21,
+     "amber": 7,
+     "red": 2
+    },
+    "other": {
+     "n": 18,
+     "amber": 13,
+     "red": 5
+    },
+    "payroll": {
+     "n": 11,
+     "amber": 9,
+     "red": 5
+    }
+   },
+   "by_source": {
+    "gnucash_user": {
+     "n": 60,
+     "fraud": 0,
+     "amber": 0,
+     "red": 0,
+     "legit": 60,
+     "legit_amber": 0,
+     "legit_red": 0
+    },
+    "uchicago": {
+     "n": 91,
+     "fraud": 91,
+     "amber": 55,
+     "red": 24,
+     "legit": 0,
+     "legit_amber": 0,
+     "legit_red": 0
+    }
+   }
+  }
+ },
+ "decision": {
+  "rule": "promote only if v6 amber caught >= live, v6 amber false alarms <= live, v6 red false alarms <= live, and the models are not within each other's intervals",
+  "checks": {
+   "v6_amber_caught_at_least_live": true,
+   "v6_amber_false_no_more_than_live": true,
+   "v6_red_false_no_more_than_live": true
+  },
+  "mechanical_checks_pass": true,
+  "amber_ci_overlap": true,
+  "red_ci_overlap": true,
+  "promote_v6": false,
+  "core_invoice_items": 7,
+  "bank_account_change_items": 0,
+  "full_v4_requirement_met": false,
+  "note": "Both amber and red intervals overlap and both models flag 0/60 genuine, so under the pre-registered 'within intervals' caveat the live model stays. v4 also has no bank-account-change frauds with account details, so it is a partial real-email test, not the full v4."
+ }
+}

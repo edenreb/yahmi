@@ -27,6 +27,8 @@ eval/*.npy
 
 # third-party email text and models trained on it (kept privately)
 data/bec_*.json
+data/arabic_*.json
+arabic_data/
 data/real_invoices_uae/
 models/*.joblib
 models/archive/
@@ -41,3 +43,6 @@ eval/pilot_*/
 
 # private bundle of models and email datasets fetched over the private channel (never committed)
 yahmi-private-data/
+
+# personal invoices dropped at the repo root (never committed; moved into data/real_invoices_uae/)
+/invoices/

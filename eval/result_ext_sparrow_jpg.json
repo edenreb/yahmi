@@ -2,38 +2,32 @@
  "result": {
   "set": "ext_sparrow",
   "format": "jpg",
-  "n": 80,
+  "n": 60,
   "field_accuracy": {
-   "supplier_name": 0.9605,
-   "iban": 0.8302,
+   "supplier_name": 0.9825,
+   "iban": 0.8605,
    "invoice_number": 1.0,
    "invoice_date": 1.0,
    "subtotal": 1.0,
    "vat": 1.0,
-   "total": 0.9867
+   "total": 0.9825
   },
   "labelled": {
-   "supplier_name": 76,
+   "supplier_name": 57,
    "supplier_trn": 0,
-   "iban": 53,
-   "invoice_number": 75,
-   "invoice_date": 76,
-   "subtotal": 76,
-   "vat": 76,
-   "total": 75
+   "iban": 43,
+   "invoice_number": 56,
+   "invoice_date": 57,
+   "subtotal": 57,
+   "vat": 57,
+   "total": 57
   },
-  "all_fields_correct": 0.8375,
-  "iban_labels_failing_checksum_not_scored": 23,
-  "iban_wrong_but_flagged": 8,
-  "iban_wrong_and_silent": 1
+  "all_fields_correct": 0.8667,
+  "iban_labels_failing_checksum_not_scored": 14,
+  "iban_wrong_but_flagged": 6,
+  "iban_wrong_and_silent": 0
  },
- "silent_iban_cases": [
-  [
-   "sp_0112.pdf",
-   "GB76VSKM38236855870683",
-   "GB76V5KM38236855870683"
-  ]
- ],
+ "silent_iban_cases": [],
  "errors": [
   [
    "sp_0000.pdf",
@@ -82,36 +76,6 @@
    "iban",
    "None",
    "GB44IJGO64103154190692"
-  ],
-  [
-   "sp_0090.pdf",
-   "supplier_name",
-   "Cunningham-Richmond",
-   "Cunningnam.lchmond"
-  ],
-  [
-   "sp_0098.pdf",
-   "supplier_name",
-   "Thomas-Mitchell",
-   "Thomas-Mitchel"
-  ],
-  [
-   "sp_0105.pdf",
-   "iban",
-   "None",
-   "GB05FZSB29082242149094"
-  ],
-  [
-   "sp_0109.pdf",
-   "iban",
-   "None",
-   "GB02NXHR06400921861370"
-  ],
-  [
-   "sp_0112.pdf",
-   "iban",
-   "GB76VSKM38236855870683",
-   "GB76V5KM38236855870683"
   ]
  ]
 }
