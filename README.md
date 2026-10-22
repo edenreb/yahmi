@@ -71,6 +71,15 @@ Try `tests/fixtures/wrong_trn.pdf` (the supplier's name with a TRN the simulated
 "SIMULATION:" and cite "SIMULATED registry (... NOT the Federal Tax Authority)". Never present them as FTA data. For the real service set
 `YAHMI_FTA_API_KEY`, `YAHMI_FTA_CLIENT_ID` and `YAHMI_FTA_CLIENT_SECRET` and leave `YAHMI_FTA_BASE_URL` / `YAHMI_FTA_TOKEN_URL` unset.
 
+## Email metadata checks
+
+When the full email is available (pasted raw, uploaded as .eml, or forwarded as an attachment), Yahmi also reads its headers (`yahmi/email_meta.py`):
+SPF/DKIM/DMARC results recorded by the receiving server (top-most header only), display-name spoofing, Return-Path / Message-ID on a different
+domain, the first email from a sender domain that asks to change bank details, and how recently the sender's domain was registered. That last
+check is on by default and asks the domain's registry (public RDAP record, found through the IANA bootstrap file) for the registration date; only
+the domain name is sent, nothing else leaves the machine, and `YAHMI_DOMAIN_AGE=0` turns it off. Top-level domains with no RDAP service, notably `.ae`,
+get no answer and no request. A plain forwarded text has no headers, and the verdict says so instead of guessing.
+
 ## WhatsApp setup (Meta WhatsApp Cloud API)
 
 1. Create a Meta developer app with the WhatsApp product and get a test phone number.
@@ -100,4 +109,4 @@ The real-email datasets (`data/bec_*.json`) and the trained email models (`model
 
 Supplier IDs and IBANs are stored only as HMAC-SHA256 fingerprints with a server-side secret key
 (`YAHMI_KEY`), so account numbers cannot be read or guessed back from the database. Invoices are deleted
-right after reading. Flags are worded as "verify", never "this is fraud".
+right after reading. Flags are worded as "verify", never "this is fraud". Sender email domains are kept in plain text (lookalike detection compares spellings) but only inside the business that received the email; they are never shared across businesses.

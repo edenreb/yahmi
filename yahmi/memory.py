@@ -59,6 +59,12 @@ class Memory:
         self.db.execute("insert or ignore into network values(?,?,?)", (s, i, b))
         self.db.commit()
 
+    def known_domains(self, business: str) -> set[str]:
+        """Sender domains of this business's own suppliers only. Domains are kept in plain text (lookalike detection compares spellings),
+        so they are scoped to the business and never shared with another one."""
+        rows = self.db.execute("select domain from history where business=? and domain is not null", (h(business),)).fetchall()
+        return {r[0] for r in rows}
+
     def check(self, business: str, supplier: str | None, iban: str | None, domain: str | None = None) -> list[Finding]:
         if not supplier or not iban:
             return []
