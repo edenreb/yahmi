@@ -7,6 +7,7 @@ from email.utils import parseaddr
 
 from rapidfuzz.distance import Levenshtein
 
+from .email_meta import check_headers
 from .rules import Finding
 
 RED_THRESHOLD = 0.80  # leave-one-source-out on 348 real emails: 118/212 frauds, 2/136 legit flagged
@@ -26,8 +27,10 @@ def parse(raw: str) -> dict:
         else:
             p = msg.get_payload(decode=True)
             body = p.decode(errors="ignore") if p else str(msg.get_payload())
-        return {"from": msg.get("From", ""), "reply_to": msg.get("Reply-To", ""), "subject": msg.get("Subject", ""), "body": body}
-    return {"from": "", "reply_to": "", "subject": "", "body": raw}
+        headers = {"authentication_results": msg.get_all("Authentication-Results") or [], "received_spf": msg.get("Received-SPF", ""),
+                   "return_path": msg.get("Return-Path", ""), "message_id": msg.get("Message-ID", ""), "received_count": len(msg.get_all("Received") or [])}
+        return {"from": msg.get("From", ""), "reply_to": msg.get("Reply-To", ""), "subject": msg.get("Subject", ""), "body": body, "headers": headers}
+    return {"from": "", "reply_to": "", "subject": "", "body": raw, "headers": None}
 
 
 def domain_of(addr: str) -> str | None:
@@ -52,7 +55,8 @@ def lookalike(d: str, known: set[str]) -> str | None:
     return None
 
 
-def check_email(parsed: dict, known_domains: set[str] | None = None, bec_score: float | None = None) -> list[Finding]:
+def check_email(parsed: dict, known_domains: set[str] | None = None, bec_score: float | None = None,
+                supplier_name: str | None = None, domain_age=None) -> list[Finding]:
     out: list[Finding] = []
     known_domains = known_domains or set()
     fd, rd = domain_of(parsed.get("from", "")), domain_of(parsed.get("reply_to", ""))
@@ -69,7 +73,8 @@ def check_email(parsed: dict, known_domains: set[str] | None = None, bec_score: 
     names = {"bank_change": "asks to pay a new or changed account", "excuse": "gives an excuse such as an audit or a frozen account",
              "pressure": "pushes you to pay quickly", "secrecy": "asks you to keep it confidential",
              "no_phone": "says they can't take calls or to reply by email only", "money_ask": "asks for a transfer"}
-    hits = [names[k] for k, v in cue_hits(text).items() if v]
+    cues = cue_hits(text)
+    hits = [names[k] for k, v in cues.items() if v]
     why = (" It " + ", ".join(hits) + ".") if hits else ""
     src = "Yahmi AI fraud-email model, tested on 348 real emails"
     if bec_score is not None and bec_score >= RED_THRESHOLD:
@@ -78,4 +83,5 @@ def check_email(parsed: dict, known_domains: set[str] | None = None, bec_score: 
         out.append(Finding("bec", "amber", f"Some wording resembles known fraud emails (score {bec_score:.2f}).{why} Check the other warnings before paying.", src))
     else:
         out.append(Finding("bec", "green", "The wording does not match known fraud patterns. Fraudsters can still write normal-looking emails, so the bank-detail checks matter most.", "Yahmi fraud-pattern rules and AI wording model"))
+    out += check_headers(parsed, known_domains, supplier_name, bool(cues.get("bank_change")), domain_age)
     return out

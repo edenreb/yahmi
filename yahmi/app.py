@@ -10,6 +10,7 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .email_checks import check_email, domain_of, parse as parse_email
+from .email_meta import DomainAge
 from .extract import extract
 from .memory import Memory, supplier_id
 from .registry import FtaTrnClient, check_trn_registry
@@ -19,6 +20,7 @@ from .sanctions import Sanctions, check_sanctions
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 app = FastAPI(title="Yahmi")
 FTA = FtaTrnClient()  # official TRN-to-name check; reports "not connected" until the API credentials are set
+DOMAIN_AGE = DomainAge()  # asks the domain registry how old the sender's domain is; YAHMI_DOMAIN_AGE=0 turns it off
 MEM = Memory(os.environ.get("YAHMI_DB", os.path.join(ROOT, "data", "yahmi.db")))
 BEC_PATH = os.path.join(ROOT, "models", "bec_final.joblib")
 BEC = None
@@ -93,8 +95,8 @@ def run_check(path: str, email_text: str = "", business: str = "default") -> dic
     findings += MEM.check(business, sup, inv.iban, dom)
     if em:
         score = float(BEC.predict_proba([(em["subject"] or "") + "\n" + em["body"]])[0, 1]) if BEC else None
-        known = {r[0] for r in MEM.db.execute("select domain from history where domain is not null").fetchall()}
-        findings += check_email(em, known, score)
+        known = MEM.known_domains(business)
+        findings += check_email(em, known, score, supplier_name=inv.supplier_name, domain_age=DOMAIN_AGE)
     findings.sort(key=lambda f: ORDER.get(f.level, 9))
     return {
         "verdict": verdict(findings),
