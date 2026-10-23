@@ -140,7 +140,27 @@ def check(request: Request, invoice: UploadFile = File(...), email_text: str = F
     finally:
         os.remove(path)
     result["mode"] = who.mode
+    if who.mode == "pilot":  # the demo keeps nothing
+        i = result["invoice"]
+        MEM.log_check(who.business, i.get("supplier_name"), i.get("invoice_number"), i.get("invoice_date"), i.get("total"), result["verdict"])
     return JSONResponse(result)
+
+
+@app.get("/api/checks")
+def checks(request: Request):
+    """This pilot business's own check log, so History is the same on every device."""
+    who = identify(request.headers.get("x-access-code"))
+    if who.mode != "pilot":
+        raise HTTPException(403, "An access code is needed to see history.")
+    return {"checks": MEM.checks(who.business)}
+
+
+@app.delete("/api/checks")
+def clear_checks(request: Request):
+    who = identify(request.headers.get("x-access-code"))
+    if who.mode != "pilot":
+        raise HTTPException(403, "An access code is needed to clear history.")
+    return {"cleared": MEM.clear_checks(who.business)}
 
 
 @app.post("/api/history")

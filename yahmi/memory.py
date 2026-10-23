@@ -47,6 +47,8 @@ class Memory:
                                                primary key(business, supplier, iban));
             create table if not exists network(supplier text, iban text, business text,
                                                primary key(supplier, iban, business));
+            create table if not exists checks(business text, ts integer, supplier text, invoice_no text, invoice_date text, total text, verdict text);
+            create index if not exists checks_by_business on checks(business, ts);
             """
         )
 
@@ -97,3 +99,23 @@ class Memory:
             else:
                 out.append(Finding("network", "red", f"{total} other business(es) on Yahmi pay this supplier into a different account. None use this one.", "Yahmi network (keyed-hash, no account numbers stored)"))
         return out
+
+    # The check log is the one place readable supplier names and amounts are stored. It is kept per business (looked up by the keyed hash of the
+    # business name), only for pilot access codes, and the business can clear it. It is never shared with another business.
+    MAX_CHECKS = 500
+
+    def log_check(self, business: str, supplier: str | None, invoice_no: str | None, invoice_date: str | None, total: str | None, verdict: str, ts: int | None = None):
+        import time
+        b = h(business)
+        self.db.execute("insert into checks values(?,?,?,?,?,?,?)", (b, int(time.time()) if ts is None else ts, supplier or "", invoice_no or "", invoice_date or "", total or "", verdict))
+        self.db.execute("delete from checks where business=? and rowid not in (select rowid from checks where business=? order by ts desc, rowid desc limit ?)", (b, b, self.MAX_CHECKS))
+        self.db.commit()
+
+    def checks(self, business: str) -> list[dict]:
+        rows = self.db.execute("select ts, supplier, invoice_no, invoice_date, total, verdict from checks where business=? order by ts desc, rowid desc", (h(business),)).fetchall()
+        return [dict(zip(("ts", "supplier", "no", "date", "total", "verdict"), r)) for r in rows]
+
+    def clear_checks(self, business: str) -> int:
+        n = self.db.execute("delete from checks where business=?", (h(business),)).rowcount
+        self.db.commit()
+        return n
