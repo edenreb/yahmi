@@ -61,9 +61,9 @@ def test_whole_app_flags_a_trn_that_belongs_to_someone_else(monkeypatch):
     monkeypatch.setattr(yapp, "FTA", client())
     api = TestClient(yapp.app)
     with open(os.path.join(FX, "wrong_trn.pdf"), "rb") as f:
-        out = api.post("/api/check", files={"invoice": ("wrong_trn.pdf", f)}, data={"business": "sim-test-wrong"}).json()
+        out = api.post("/api/check", files={"invoice": ("wrong_trn.pdf", f)}, data={"access_code": "c-sim-wrong"}).json()
     reg = [x for x in out["findings"] if x["check"] == "trn_registry"]
     assert out["verdict"] == "stop" and reg and reg[0]["level"] == "red" and reg[0]["message"].startswith("SIMULATION:")
     with open(os.path.join(FX, "genuine_new.pdf"), "rb") as f:
-        ok = api.post("/api/check", files={"invoice": ("genuine_new.pdf", f)}, data={"business": "sim-test-ok"}).json()
+        ok = api.post("/api/check", files={"invoice": ("genuine_new.pdf", f)}, data={"access_code": "c-sim-ok"}).json()
     assert [x["level"] for x in ok["findings"] if x["check"] == "trn_registry"] == ["green"]

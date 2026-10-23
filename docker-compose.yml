@@ -1,0 +1,19 @@
+# Run on the server:  docker compose up -d --build
+# Needs a .env file next to this one (see .env.example) and a ./private folder with the model files (see docs/DEPLOY.md).
+services:
+  yahmi:
+    build: .
+    image: yahmi:local
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "127.0.0.1:8000:8000"      # only this machine can reach it; the HTTPS tunnel connects from here
+    volumes:
+      - ./private/models:/app/models:ro
+      - ./private/sanctions:/app/data/sanctions:ro
+      - yahmi-data:/var/lib/yahmi    # the history database
+      - fastembed-cache:/cache/fastembed
+
+volumes:
+  yahmi-data:
+  fastembed-cache:

@@ -1,6 +1,7 @@
 # secrets and local state
 .env
 .env.*
+!.env.example
 data/.yahmi_key
 *.db
 *.sqlite

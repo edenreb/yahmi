@@ -5,13 +5,14 @@ import os
 import tempfile
 
 import joblib
-from fastapi import FastAPI, File, Form, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from .email_checks import check_email, domain_of, parse as parse_email
 from .email_meta import DomainAge
 from .extract import extract
+from .guard import MAX_EMAIL_CHARS, MAX_HISTORY_FILES, check_slot, enforce, identify, read_upload
 from .memory import Memory, supplier_id
 from .registry import FtaTrnClient, check_trn_registry
 from .rules import check_invoice
@@ -65,10 +66,11 @@ ORDER = {"red": 0, "amber": 1, "green": 2, "info": 3}
 
 
 def _save(upload: UploadFile) -> str:
-    suffix = os.path.splitext(upload.filename or "")[1].lower() or ".pdf"
+    """Write an upload to a temporary file after checking its size and type (raises 413 / 415)."""
+    data, suffix = read_upload(upload)
     fd, path = tempfile.mkstemp(suffix=suffix)
     with os.fdopen(fd, "wb") as f:
-        f.write(upload.file.read())
+        f.write(data)
     return path
 
 
@@ -117,23 +119,45 @@ def add_history(path: str, business: str = "default", email_domain: str | None =
     return None
 
 
+@app.get("/api/whoami")
+def whoami(request: Request):
+    """Lets the sign-in page test an access code (or the demo) without uploading anything. Says only which mode the code gives."""
+    who = identify(request.headers.get("x-access-code"))
+    return {"mode": who.mode}
+
+
 @app.post("/api/check")
-async def check(invoice: UploadFile = File(...), email_text: str = Form(""), business: str = Form("default")):
+def check(request: Request, invoice: UploadFile = File(...), email_text: str = Form(""), access_code: str = Form("")):
+    """The business comes from the access code, never from the request: with no code the caller gets the demo (no history, nothing saved)."""
+    who = identify(access_code or request.headers.get("x-access-code"))
+    enforce(request, who)
+    if len(email_text) > MAX_EMAIL_CHARS:
+        raise HTTPException(413, "That email is too long.")
     path = _save(invoice)
     try:
-        return JSONResponse(run_check(path, email_text, business))
+        with check_slot():
+            result = run_check(path, email_text, who.business)
     finally:
         os.remove(path)
+    result["mode"] = who.mode
+    return JSONResponse(result)
 
 
 @app.post("/api/history")
-async def history(files: list[UploadFile] = File(...), business: str = Form("default"), email_domain: str = Form("")):
-    """Day-one onboarding: read past paid invoices to build this business's supplier history."""
+def history(request: Request, files: list[UploadFile] = File(...), access_code: str = Form(""), email_domain: str = Form("")):
+    """Day-one onboarding for a pilot business: read past paid invoices to build its supplier history. Not available in demo mode."""
+    who = identify(access_code or request.headers.get("x-access-code"))
+    if who.mode != "pilot":
+        raise HTTPException(403, "An access code is needed to save history.")
+    enforce(request, who)
+    if len(files) > MAX_HISTORY_FILES:
+        raise HTTPException(413, f"Please add at most {MAX_HISTORY_FILES} invoices at a time.")
     added = []
     for up in files:
         path = _save(up)
         try:
-            a = add_history(path, business, email_domain or None)
+            with check_slot():
+                a = add_history(path, who.business, email_domain or None)
         finally:
             os.remove(path)
         if a:
@@ -146,8 +170,9 @@ def _f(check, level, message, source):
     return Finding(check, level, message, source)
 
 
-from .whatsapp import router as wa_router  # noqa: E402
-app.include_router(wa_router)
+if os.environ.get("YAHMI_ENABLE_WHATSAPP") == "1":   # off by default: the webhook does not yet verify Meta's signature
+    from .whatsapp import router as wa_router  # noqa: E402
+    app.include_router(wa_router)
 
 
 app.mount("/assets", StaticFiles(directory=os.path.join(ROOT, "web", "assets")), name="assets")
