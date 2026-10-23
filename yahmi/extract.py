@@ -6,6 +6,7 @@ subtotal + VAT = total. Anything it cannot confirm is returned as uncertain for 
 """
 from __future__ import annotations
 
+import os
 import re
 from decimal import Decimal, InvalidOperation
 from difflib import SequenceMatcher
@@ -28,13 +29,13 @@ def norm_digits(text: str) -> str:
     return text.translate(_DIGITS)
 
 
-def get_text(path: str, lang: str = "eng") -> tuple[str, str]:
+def get_text(path: str, lang: str = "eng", enhance: bool = False, engine: str = "tesseract") -> tuple[str, str]:
     """Returns (text, method). Digits are normalised to Latin."""
-    text, method = _get_text(path, lang)
+    text, method = _get_text(path, lang, enhance, engine)
     return norm_digits(text), method
 
 
-def _get_text(path: str, lang: str) -> tuple[str, str]:
+def _get_text(path: str, lang: str, enhance: bool = False, engine: str = "tesseract") -> tuple[str, str]:
     low = path.lower()
     if low.endswith(".pdf"):
         import pdfplumber
@@ -49,15 +50,64 @@ def _get_text(path: str, lang: str) -> tuple[str, str]:
         doc = fitz.open(path)
         pix = doc[0].get_pixmap(dpi=200)
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        return ocr(img, lang), "ocr"
-    from PIL import Image
-    return ocr(Image.open(path), lang), "ocr"
+        return ocr(img, lang, enhance, engine), "ocr"
+    from PIL import Image, ImageOps
+    return ocr(ImageOps.exif_transpose(Image.open(path)), lang, enhance, engine), "ocr"
 
 
-def ocr(img, lang: str = "eng") -> str:
+_INDRA = None
+
+
+def indra_available() -> bool:
+    """Indra OCR (local, CPU, ONNX) is the primary reader for photos and scans. YAHMI_OCR=tesseract turns it off."""
+    global _INDRA
+    if os.environ.get("YAHMI_OCR") == "tesseract":
+        return False
+    if _INDRA is None:
+        try:
+            import indra_ocr
+            _INDRA = indra_ocr.load(threads=int(os.environ.get("YAHMI_OCR_THREADS", "2")))
+        except Exception:  # not installed, model missing, unsupported CPU: Tesseract takes over
+            _INDRA = False
+    return bool(_INDRA)
+
+
+def _indra_text(gray) -> str:
+    """Indra's detected lines (gray: uint8 array), rebuilt into rows with the same "   " column gaps the Tesseract reader makes."""
+    page = _INDRA.ocr(gray)
+    rows = []
+    for l in sorted(page.lines, key=lambda l: (l.box[1] + l.box[3]) / 2):
+        cy, h = (l.box[1] + l.box[3]) / 2, max(l.box[3] - l.box[1], 1)
+        for r in rows:
+            if abs(r["cy"] - cy) < 0.5 * max(r["h"], h):
+                r["items"].append(l)
+                break
+        else:
+            rows.append({"cy": cy, "h": h, "items": [l]})
+    out = []
+    for r in rows:
+        line, last = "", None
+        for l in sorted(r["items"], key=lambda l: l.box[0]):
+            if last is not None:
+                line += "   " if l.box[0] - last > 2.5 * r["h"] else " "
+            line += l.text
+            last = l.box[2]
+        out.append(line)
+    return "\n".join(out)
+
+
+def ocr(img, lang: str = "eng", enhance: bool = False, engine: str = "tesseract") -> str:
+    if engine == "indra":
+        import numpy as np
+        return _indra_text(np.asarray(img.convert("L"), dtype=np.uint8))
     import pytesseract
+    from PIL import ImageOps
     img = img.convert("L")
-    if img.width < 1600:
+    if enhance:  # phone photos: stretch the contrast and read at a fixed large size
+        img = ImageOps.autocontrast(img, cutoff=2)
+        if img.width != 2200:
+            img = img.resize((2200, round(img.height * 2200 / img.width)))
+    elif img.width < 1600:
         img = img.resize((img.width * 2, img.height * 2))
     # rebuild lines from word boxes, marking big horizontal gaps as column breaks ("   ")
     d = pytesseract.image_to_data(img, lang=lang, config="--psm 6", output_type=pytesseract.Output.DICT)
@@ -185,12 +235,15 @@ def find_iban(text: str) -> tuple[str | None, bool]:
 
 def find_trns(text: str) -> tuple[str | None, str | None]:
     supplier = customer = None
-    for line in text.splitlines():
+    block = -1  # a "bill to"/customer line opens a block: a TRN on one of the next lines belongs to the customer
+    for n, line in enumerate(text.splitlines()):
+        if re.search(r"customer|bill\s*to|buyer|client|recipient", line, re.I):
+            block = n
         for m in re.finditer(r"(?<!\d)(\d[\d ]{13,18}\d)(?!\d)", line):
             d = re.sub(r"\D", "", m.group(1))
             if len(d) != 15:
                 continue
-            if re.search(r"customer|bill\s*to|buyer|client|recipient", line, re.I):
+            if n - block <= 3 and block >= 0 and not re.search(r"supplier|seller|vendor", line, re.I):
                 customer = customer or d
             elif re.search(r"trn|tax|vat|reg", line, re.I):
                 supplier = supplier or d
@@ -728,16 +781,31 @@ def _score(inv: Invoice) -> int:
     return 2 * bool(inv.extra.get("amounts_confident")) + 2 * bool(inv.extra.get("iban_confident")) + bool(inv.supplier_trn)
 
 
+def _rank(inv: Invoice) -> tuple[int, int]:
+    """Reconciled reads first, then the read that filled in more fields."""
+    return _score(inv), sum(v is not None for k, v in inv.__dict__.items() if k not in ("raw_text", "extra"))
+
+
 def extract(path: str) -> Invoice:
-    text, method = get_text(path)
+    engine = "indra" if indra_available() else "tesseract"
+    try:
+        text, method = get_text(path, engine=engine)
+    except Exception:
+        if engine == "tesseract":
+            raise
+        engine = "tesseract"  # Indra failed on this file: read it with Tesseract
+        text, method = get_text(path)
     inv = parse(text)
-    inv.extra["method"] = method
+    inv.extra["method"] = method if engine == "tesseract" else "ocr-indra"
     # Bilingual invoice photo (e.g. Eastern Arabic digits) that English OCR couldn't reconcile:
     # retry with Arabic + English OCR and keep whichever read checks out better.
     if method == "ocr" and _score(inv) < 5:
-        text2, _ = get_text(path, "ara+eng")
-        inv2 = parse(text2)
-        inv2.extra["method"] = "ocr-ara"
-        if _score(inv2) > _score(inv):
-            return inv2
+        reads = (("eng", False, "ocr-tesseract"),) if engine == "indra" else ()
+        for lang, enh, tag in reads + (("eng", True, "ocr-enhanced"), ("ara+eng", False, "ocr-ara")):
+            inv2 = parse(get_text(path, lang, enh)[0])
+            inv2.extra["method"] = tag
+            if _rank(inv2) > _rank(inv):
+                inv = inv2
+            if _score(inv) >= 5:
+                break
     return inv
