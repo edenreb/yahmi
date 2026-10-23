@@ -32,3 +32,16 @@ def test_trn_and_vat():
     assert levels(check_trn("12345")) == ["red"]
     assert levels(check_vat(Invoice(subtotal=D("100"), vat=D("5"), total=D("105")))) == ["green"]
     assert "red" in levels(check_vat(Invoice(subtotal=D("100"), vat=D("5"), total=D("150"))))
+
+
+def test_no_bank_details_at_all_is_not_a_warning():
+    from yahmi.rules import check_iban
+    f = check_iban(None, "TAX INVOICE\nSub Total 156.50\nPayment: cheque on delivery")[0]
+    assert f.level == "info" and "cheque" in f.message
+
+
+def test_missing_iban_still_warns_when_the_page_talks_about_a_bank():
+    from yahmi.rules import check_iban
+    for text in ("Bank: Emirates NBD\nIBAN: AE0702", "Please transfer to our account", "الرجاء التحويل إلى الحساب", ""):
+        assert check_iban(None, text)[0].level == "amber"
+    assert check_iban(None)[0].level == "amber"  # no text given: behaves as before
