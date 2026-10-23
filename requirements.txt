@@ -5,6 +5,7 @@ requests==2.34.2
 pdfplumber==0.11.10
 pymupdf==2.0
 pytesseract==0.3.13
+indra-ocr==1.1.2
 pillow==12.3.0
 rapidfuzz==3.14.6
 numpy==2.5.3
