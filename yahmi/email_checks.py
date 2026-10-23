@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import email
 import re
+from html import unescape
 from email.utils import parseaddr
 
 from rapidfuzz.distance import Levenshtein
@@ -15,18 +16,33 @@ FREE_MAIL = {"gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "live.com",
 HOMOGLYPHS = [("rn", "m"), ("vv", "w"), ("0", "o"), ("1", "l"), ("i", "l"), ("|", "l")]
 
 
+def _html_text(h: str) -> str:
+    """Visible text of an HTML body: drops scripts, styles and tags (links and attachments are never kept)."""
+    h = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", h)
+    h = re.sub(r"(?i)<br\s*/?>|</(p|div|tr|li|h\d)>", "\n", h)
+    return re.sub(r"[ \t]+", " ", unescape(re.sub(r"<[^>]+>", " ", h))).strip()
+
+
 def parse(raw: str) -> dict:
     """Accepts a raw RFC 822 email or plain pasted text. Returns from/reply_to/subject/body."""
     if re.search(r"^(from|subject|reply-to):", raw, re.I | re.M):
         msg = email.message_from_string(raw)
         body = ""
         if msg.is_multipart():
+            texts, htmls = [], []
             for part in msg.walk():
-                if part.get_content_type() == "text/plain":
-                    body += part.get_payload(decode=True).decode(errors="ignore")
+                if part.is_multipart() or part.get_content_disposition() == "attachment":
+                    continue  # an attached file is not the message text
+                payload = part.get_payload(decode=True)
+                kind = part.get_content_type()
+                if payload and kind in ("text/plain", "text/html"):
+                    (texts if kind == "text/plain" else htmls).append(payload.decode(part.get_content_charset() or "utf-8", errors="ignore"))
+            body = "".join(texts) or _html_text("".join(htmls))  # an HTML-only message still has its text
         else:
             p = msg.get_payload(decode=True)
-            body = p.decode(errors="ignore") if p else str(msg.get_payload())
+            body = p.decode(msg.get_content_charset() or "utf-8", errors="ignore") if p else str(msg.get_payload())
+            if msg.get_content_type() == "text/html":
+                body = _html_text(body)
         headers = {"authentication_results": msg.get_all("Authentication-Results") or [], "received_spf": msg.get("Received-SPF", ""),
                    "return_path": msg.get("Return-Path", ""), "message_id": msg.get("Message-ID", ""), "received_count": len(msg.get_all("Received") or [])}
         return {"from": msg.get("From", ""), "reply_to": msg.get("Reply-To", ""), "subject": msg.get("Subject", ""), "body": body, "headers": headers}
