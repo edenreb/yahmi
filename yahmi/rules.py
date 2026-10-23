@@ -77,10 +77,18 @@ def iban_bank(iban: str) -> dict | None:
     return dict(b, code=code) if b else {"code": code, "name": None}
 
 
-def check_iban(iban: str | None) -> list[Finding]:
+_BANK_CUES = re.compile(r"iban|a/c|account\s*(?:no|number|name)|swift|bic\b|bank|sort\s*code|wire|transfer|ايبان|الايبان|حساب|بنك|مصرف|تحويل", re.I)
+_CHEQUE_CASH = re.compile(r"cheque|check\s+(?:no|payable)|cash|شيك|نقد", re.I)
+
+
+def check_iban(iban: str | None, text: str | None = None) -> list[Finding]:
     src_iban = "ISO 13616 IBAN checksum (mod 97)"
     src_bank = "UAE IBAN bank-identifier list (CBUAE)"
     iban = normalise_iban(iban)
+    if not iban and text and not _BANK_CUES.search(text):
+        # nothing on the page mentions a bank, an account or a transfer: a cheque or cash invoice, so there is no account to compare
+        how = "cheque or cash" if _CHEQUE_CASH.search(text) else "cheque, cash or another way that needs no bank account"
+        return [Finding("iban", "info", f"No bank account on this invoice (paid by {how}). The payment-account check does not apply. If the supplier later asks you to pay into an account instead, treat that as a changed payment method and confirm it by phone.", "Invoice text")]
     if not iban:
         return [Finding("iban", "amber", "No IBAN found on the invoice. Confirm the payment account with the supplier by phone.", "")]
     if not iban.startswith("AE"):
@@ -154,4 +162,4 @@ def check_fields(inv: Invoice) -> list[Finding]:
 
 
 def check_invoice(inv: Invoice) -> list[Finding]:
-    return check_iban(inv.iban) + check_trn(inv.supplier_trn, "supplier") + check_vat(inv) + check_fields(inv)
+    return check_iban(inv.iban, inv.raw_text) + check_trn(inv.supplier_trn, "supplier") + check_vat(inv) + check_fields(inv)
