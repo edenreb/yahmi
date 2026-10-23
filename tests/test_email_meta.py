@@ -127,3 +127,13 @@ def test_whole_app_stops_on_a_dmarc_fail():
     with open(os.path.join(FIXTURES, "genuine_new.pdf"), "rb") as f:
         out = client.post("/api/check", files={"invoice": ("g.pdf", f)}, data={"email_text": text, "business": "meta-test"}).json()
     assert out["verdict"] == "stop" and any(x["check"] == "auth" and x["level"] == "red" for x in out["findings"])
+
+
+def test_html_only_multipart_email_keeps_its_text():
+    from yahmi.email_checks import parse
+    raw = ("From: Accounts <a@supplier.example>\nSubject: New bank details\nMIME-Version: 1.0\n"
+           "Content-Type: multipart/mixed; boundary=B\n\n"
+           "--B\nContent-Type: text/html; charset=utf-8\n\n<p>Please pay to our <b>new</b> account.<script>x()</script></p>\n"
+           "--B\nContent-Type: text/plain; name=note.txt\nContent-Disposition: attachment; filename=note.txt\n\nattached text\n--B--\n")
+    body = parse(raw)["body"]
+    assert "new account" in body and "x()" not in body and "attached text" not in body
