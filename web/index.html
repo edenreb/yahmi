@@ -4,62 +4,317 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Yahmi</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="icon" href="/assets/icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&display=swap">
 <style>
-:root { --bg:#f4f6f5; --card:#fff; --ink:#14201c; --muted:#5a6b65; --line:#d9e1de; --red:#c62f2f; --red-bg:#fbe9e9; --amber:#a76a00; --amber-bg:#fdf3df; --green:#18794e; --green-bg:#e3f4ec; --accent:#0f5f4b;
-  --display:"Bricolage Grotesque",system-ui,sans-serif; --body:"IBM Plex Sans",system-ui,sans-serif }
-@media (prefers-color-scheme: dark) { :root { --bg:#0e1513; --card:#16201d; --ink:#e5eeea; --muted:#94a7a0; --line:#26342f; --red:#ff7b7b; --red-bg:#3a1c1c; --amber:#f2b64f; --amber-bg:#3a2d12; --green:#5fd39b; --green-bg:#163327; --accent:#5fd3b3; color-scheme: dark } }
-* { box-sizing:border-box } body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 var(--body); padding:24px max(16px, env(safe-area-inset-left)) 64px }
-.wrap { max-width:760px; margin:0 auto; display:grid; gap:16px }
-h1 { font:800 34px/1.05 var(--display); margin:0 } .sub { color:var(--muted); margin:6px 0 0 }
-.card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; display:grid; gap:12px }
-label { font-weight:600; font-size:13px } textarea, input[type=file], input[type=text] { width:100%; font:14px var(--body); padding:10px; border:1px solid var(--line); border-radius:10px; background:var(--bg); color:var(--ink) }
-textarea { min-height:110px } button { font:600 15px var(--body); padding:12px 18px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; justify-self:start }
-button:disabled { opacity:.6 } .row { display:grid; gap:6px }
-.verdict { border-radius:14px; padding:18px; font:800 26px/1.1 var(--display) } .verdict small { display:block; font:500 14px var(--body); margin-top:6px }
-.stop { background:var(--red-bg); color:var(--red) } .check { background:var(--amber-bg); color:var(--amber) } .ok { background:var(--green-bg); color:var(--green) }
-.f { display:grid; grid-template-columns:14px 1fr; gap:10px; padding:10px 0; border-top:1px solid var(--line) } .f:first-child { border-top:0 }
-.dot { width:10px; height:10px; border-radius:50%; margin-top:6px } .dot.red { background:var(--red) } .dot.amber { background:var(--amber) } .dot.green { background:var(--green) } .dot.info { background:var(--muted) }
-.src { color:var(--muted); font-size:12px } details summary { cursor:pointer; color:var(--muted) } pre { white-space:pre-wrap; font-size:12px }
+:root { --bg:#131513; --card:#1b1d1b; --card2:#222522; --ink:#eef2ee; --muted:#8e9890; --line:#2e332e; --accent:#34d98f; --accent-ink:#06281a;
+  --red:#ff7b7b; --red-bg:#3a1c1c; --amber:#f2b64f; --amber-bg:#3a2d12; --green:#5fd39b; --green-bg:#163327;
+  --font:"Inter Tight",system-ui,-apple-system,sans-serif; color-scheme:dark }
+* { box-sizing:border-box }
+html, body { height:100% }
+body { margin:0; background:var(--bg) radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.2px) 0 0/28px 28px; color:var(--ink); font:16px/1.5 var(--font); display:flex; flex-direction:column }
+button, input, textarea { font:inherit; color:inherit }
+[hidden] { display:none !important }
+.top { display:flex; align-items:center; justify-content:space-between; padding:14px max(20px, env(safe-area-inset-left)); border-bottom:1px solid var(--line); background:rgba(19,21,19,.85); backdrop-filter:blur(8px); position:sticky; top:0; z-index:5 }
+.brand { display:flex; align-items:center; gap:10px; font-weight:600; font-size:20px; color:var(--ink); text-decoration:none }
+.brand svg { color:var(--accent) }
+nav { display:flex; gap:4px }
+nav button { background:none; border:0; padding:8px 14px; border-radius:10px; color:var(--muted); cursor:pointer; font-weight:500 }
+nav button:hover { color:var(--ink) } nav button.on { background:var(--card2); color:var(--ink) }
+main { flex:1; display:flex; flex-direction:column; min-height:0; width:100%; max-width:820px; margin:0 auto; padding:0 max(16px, env(safe-area-inset-left)) }
+.view { flex:1; display:flex; flex-direction:column; min-height:0 }
+/* sign in */
+#signin { align-items:center; justify-content:center; text-align:center; gap:6px; padding:40px 0 }
+#signin h1 { font-size:44px; line-height:1.05; letter-spacing:-.02em; margin:18px 0 0; font-weight:700 }
+.lead { color:var(--muted); margin:6px 0 26px }
+.panel { background:var(--card); border:1px solid var(--line); border-radius:22px; padding:22px; width:100%; max-width:460px; text-align:left; box-shadow:0 12px 40px rgba(0,0,0,.35) }
+.panel label { display:block; color:var(--muted); font-size:14px; font-weight:500; margin-bottom:8px }
+.field { width:100%; background:var(--card2); border:1px solid var(--line); border-radius:14px; padding:14px 16px; outline:none }
+.field:focus { border-color:var(--accent) }
+.btn { width:100%; margin-top:16px; background:var(--accent); color:var(--accent-ink); border:0; border-radius:999px; padding:14px; font-weight:600; cursor:pointer }
+.btn:disabled { opacity:.55; cursor:default }
+.linkbtn { background:none; border:0; color:var(--ink); cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:0 }
+.err { color:var(--red); font-size:14px; margin-top:12px; min-height:1.2em }
+.small { color:var(--muted); font-size:13px }
+/* chat */
+#thread { flex:1; overflow-y:auto; padding:28px 0 12px; display:flex; flex-direction:column; gap:22px }
+.hello { text-align:center; margin:auto 0; padding:20px 0 }
+.hello .badge { width:64px; height:64px; margin:0 auto 22px; border-radius:18px; background:linear-gradient(160deg,#3b3f3b,#222522); border:1px solid #444a44; display:grid; place-items:center; color:#fff }
+.hello h2 { margin:0; font-size:30px; letter-spacing:-.015em; font-weight:600 }
+.hello p { color:var(--muted); margin:8px auto 22px; max-width:460px }
+.chips { display:flex; flex-wrap:wrap; gap:10px; justify-content:center }
+.chip { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--line); border-radius:12px; padding:9px 14px; cursor:pointer; font-weight:500; font-size:15px }
+.chip:hover { border-color:#4a514a }
+.chip svg { color:var(--accent) }
+.msg { display:flex; gap:12px; animation:rise .35s ease both }
+.msg.user { justify-content:flex-end }
+.bubble { background:var(--card2); border:1px solid var(--line); border-radius:18px 18px 6px 18px; padding:12px 16px; max-width:85%; overflow-wrap:anywhere }
+.bubble .file { display:inline-flex; align-items:center; gap:8px; font-weight:500 }
+.bubble .snip { color:var(--muted); font-size:14px; margin-top:6px; white-space:pre-wrap }
+.avatar { flex:none; width:34px; height:34px; border-radius:10px; background:linear-gradient(160deg,#3b3f3b,#222522); border:1px solid #444a44; display:grid; place-items:center; color:#fff; margin-top:2px }
+.answer { flex:1; min-width:0 }
+.thinking { display:flex; flex-direction:column; gap:10px; padding-top:6px }
+.shimmer { font-weight:500; background:linear-gradient(90deg,var(--muted) 20%,var(--ink) 50%,var(--muted) 80%) 0 0/250% 100%; -webkit-background-clip:text; background-clip:text; color:transparent; animation:sheen 1.8s linear infinite }
+.dots span { display:inline-block; animation:blink 1.2s infinite both } .dots span:nth-child(2) { animation-delay:.2s } .dots span:nth-child(3) { animation-delay:.4s }
+.steps { list-style:none; margin:0; padding:0; display:grid; gap:6px; color:var(--muted); font-size:14px }
+.steps li { display:flex; align-items:center; gap:10px; opacity:0; animation:rise .4s ease both }
+.steps li i { width:8px; height:8px; border-radius:50%; background:var(--muted); flex:none }
+.steps li.done i { background:var(--accent) } .steps li.now { color:var(--ink) } .steps li.now i { background:var(--accent); animation:pulse 1s infinite }
+.sparkle { animation:spin 2.4s linear infinite } .avatar.busy { animation:glow 1.6s ease-in-out infinite }
+.verdict { display:inline-flex; align-items:center; gap:10px; border-radius:14px; padding:10px 16px; font-weight:700; font-size:22px; letter-spacing:-.01em }
+.verdict.stop { background:var(--red-bg); color:var(--red) } .verdict.check { background:var(--amber-bg); color:var(--amber) } .verdict.ok { background:var(--green-bg); color:var(--green) }
+.vsub { color:var(--muted); margin:8px 0 14px }
+.finds { background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden }
+.f { display:grid; grid-template-columns:14px 1fr; gap:12px; padding:14px 16px; border-top:1px solid var(--line); animation:rise .4s ease both }
+.f:first-child { border-top:0 }
+.dot { width:10px; height:10px; border-radius:50%; margin-top:7px } .dot.red { background:var(--red) } .dot.amber { background:var(--amber) } .dot.green { background:var(--green) } .dot.info { background:var(--muted) }
+.src { color:var(--muted); font-size:13px; margin-top:2px }
+details.read { margin-top:12px; color:var(--muted); font-size:14px } details.read summary { cursor:pointer }
+.kv { display:grid; grid-template-columns:auto 1fr; gap:4px 16px; margin-top:10px; color:var(--ink) } .kv b { color:var(--muted); font-weight:500 }
+/* composer */
+.composer { position:sticky; bottom:0; padding:8px 0 max(16px, env(safe-area-inset-bottom)); background:linear-gradient(transparent, var(--bg) 22%) }
+.box { background:var(--card); border:1px solid var(--line); border-radius:20px; box-shadow:0 10px 36px rgba(0,0,0,.35) }
+.box:focus-within { border-color:#4a514a }
+.box textarea { width:100%; background:none; border:0; outline:none; resize:none; padding:16px 18px 6px; min-height:56px; max-height:200px }
+.attached { display:flex; gap:8px; flex-wrap:wrap; padding:12px 14px 0 }
+.pill { display:inline-flex; align-items:center; gap:8px; background:var(--card2); border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-size:14px }
+.pill button { background:none; border:0; color:var(--muted); cursor:pointer; padding:0; line-height:1 }
+.bar { display:flex; align-items:center; justify-content:space-between; padding:8px 10px 10px 12px; border-top:1px solid var(--line); margin-top:6px; gap:8px }
+.tools { display:flex; gap:4px; flex-wrap:wrap }
+.tool { display:inline-flex; align-items:center; gap:8px; background:none; border:0; color:var(--muted); cursor:pointer; padding:8px 10px; border-radius:10px; font-weight:500 }
+.tool:hover { color:var(--ink); background:var(--card2) }
+.send { background:var(--accent); color:var(--accent-ink); border:0; border-radius:999px; padding:10px 20px; font-weight:600; cursor:pointer; display:inline-flex; gap:8px; align-items:center }
+.send:disabled { opacity:.4; cursor:default }
+.note { text-align:center; color:var(--muted); font-size:13px; margin-top:10px }
+/* history */
+#history { padding:34px 0 60px; gap:0; overflow-y:auto }
+#history h1 { font-size:44px; letter-spacing:-.02em; margin:0 0 8px; font-weight:700 }
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:24px 0 }
+.stat { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:16px 18px } .stat .n { font-size:30px; font-weight:600 }
+.search { position:relative; margin-bottom:14px } .search svg { position:absolute; left:16px; top:50%; transform:translateY(-50%); color:var(--muted) }
+.search .field { padding-left:46px }
+.list { background:var(--card); border:1px solid var(--line); border-radius:18px; overflow:hidden }
+.row { display:flex; align-items:center; gap:14px; padding:16px 18px; border-top:1px solid var(--line) } .row:first-child { border-top:0 }
+.ini { flex:none; width:42px; height:42px; border-radius:12px; background:var(--card2); display:grid; place-items:center; color:var(--muted); font-weight:600 }
+.row .main { flex:1; min-width:0 } .row .name { font-weight:500; display:flex; gap:10px; align-items:center; flex-wrap:wrap }
+.tag { border-radius:999px; padding:1px 10px; font-size:13px; font-weight:500 } .tag.stop { background:var(--red-bg); color:var(--red) } .tag.check { background:var(--amber-bg); color:var(--amber) } .tag.ok { background:var(--green-bg); color:var(--green) }
+.row .meta { color:var(--muted); font-size:14px } .row .amt { text-align:right; font-weight:500; white-space:nowrap }
+.empty { padding:30px; text-align:center; color:var(--muted) }
+.setup { margin-top:26px } .setup summary { cursor:pointer; color:var(--muted) }
+.setup form { background:var(--card); border:1px solid var(--line); border-radius:18px; padding:18px; margin-top:12px; display:grid; gap:10px }
+@keyframes rise { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:none } }
+@keyframes sheen { to { background-position:-250% 0 } }
+@keyframes blink { 0%,80%,100% { opacity:.15 } 40% { opacity:1 } }
+@keyframes pulse { 50% { transform:scale(1.6); opacity:.5 } }
+@keyframes spin { to { transform:rotate(360deg) } }
+@keyframes glow { 50% { box-shadow:0 0 0 6px rgba(52,217,143,.12); border-color:var(--accent) } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration:.01ms !important; animation-iteration-count:1 !important } }
+@media (max-width:560px) { #signin h1, #history h1 { font-size:34px } .stats { grid-template-columns:1fr } .bubble { max-width:95% } .tool span { display:none } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header><h1>Yahmi</h1><p class="sub">Check a supplier invoice before you pay it. Every warning shows the record it came from.</p></header>
-  <form class="card" id="checkForm">
-    <div class="row"><label for="biz">Your business</label><input type="text" id="biz" name="business" value="" placeholder="e.g. Your Company LLC"></div>
-    <div class="row"><label for="inv">Invoice (PDF or photo)</label><input type="file" id="inv" name="invoice" accept=".pdf,image/*" required></div>
-    <div class="row"><label for="em">The email it came with (optional, paste it in)</label><textarea id="em" name="email_text" placeholder="From: ...&#10;Reply-To: ...&#10;Subject: ...&#10;&#10;Dear Accounts team, ..."></textarea></div>
-    <button id="go" type="submit">Check before paying</button>
-  </form>
-  <div id="out"></div>
-  <details class="card"><summary>Set up: add invoices you have already paid</summary>
-    <form id="histForm" class="row">
-      <input type="hidden" name="business" id="histBiz">
-      <label for="hist">Past invoices (select several)</label><input type="file" id="hist" name="files" multiple accept=".pdf,image/*">
-      <label for="dom">Email domain these suppliers normally use (optional)</label><input type="text" id="dom" name="email_domain">
-      <button type="submit">Add to my history</button><div id="histOut" class="src"></div>
+<header class="top">
+  <a class="brand" href="#/check"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="16" r="1" fill="currentColor"/></svg>Yahmi</a>
+  <nav id="nav" hidden><button data-go="check">Check</button><button data-go="history">History</button><button id="out">Sign out</button></nav>
+</header>
+<main>
+  <section class="view" id="signin" hidden>
+    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#34d98f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="3"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/><circle cx="12" cy="16" r="1" fill="#34d98f"/></svg>
+    <h1>Welcome</h1>
+    <p class="lead">Check an invoice before you pay it.</p>
+    <form class="panel" id="signForm">
+      <label for="code">Access code</label>
+      <input class="field" id="code" type="password" autocomplete="off" placeholder="given to you for the pilot">
+      <button class="btn" id="signBtn" type="submit">Sign in</button>
+      <div class="err" id="signErr" role="alert"></div>
     </form>
-  </details>
-</div>
+    <p class="small" style="margin-top:22px">No code? <button class="linkbtn" id="demoBtn" type="button">Try the demo</button></p>
+  </section>
+
+  <section class="view" id="check" hidden>
+    <div id="thread" aria-live="polite">
+      <div class="hello" id="hello">
+        <div class="badge"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.6 4.8 3.2 8.4 10 10-6.8 1.6-9.4 5.2-10 10-.6-4.8-3.2-8.4-10-10 6.8-1.6 9.4-5.2 10-10z"/></svg></div>
+        <h2>What are we checking?</h2>
+        <p>Attach a supplier invoice (and the email it came with, if you have it). I'll tell you whether to pay, check first, or stop.</p>
+        <div class="chips">
+          <button class="chip" data-act="invoice"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></svg>Attach an invoice</button>
+          <button class="chip" data-act="email"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Paste the email</button>
+        </div>
+        <p class="small" id="mode" style="margin-top:22px"></p>
+      </div>
+    </div>
+    <div class="composer">
+      <form class="box" id="form">
+        <div class="attached" id="attached" hidden></div>
+        <textarea id="em" rows="1" placeholder="Paste the email it came with (optional)…" aria-label="The email the invoice came with"></textarea>
+        <div class="bar">
+          <div class="tools">
+            <button type="button" class="tool" id="pick"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 11-9 9a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8-8"/></svg><span>Attach invoice</span></button>
+            <button type="button" class="tool" id="pickEml"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span>Attach email (.eml)</span></button>
+          </div>
+          <button class="send" id="go" type="submit" disabled>Check <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+        <input type="file" id="inv" accept=".pdf,image/*" hidden>
+        <input type="file" id="eml" accept=".eml,.txt,message/rfc822,text/plain" hidden>
+      </form>
+      <div class="note">Nothing is paid or sent from here.</div>
+    </div>
+  </section>
+
+  <section class="view" id="history" hidden>
+    <h1>History</h1>
+    <p class="lead" style="margin-bottom:0">Invoices you checked in this browser. Kept on this device only, never uploaded.</p>
+    <div class="stats"><div class="stat"><div class="small">Checked</div><div class="n" id="sChecked">0</div></div><div class="stat"><div class="small">Needs a look</div><div class="n" id="sLook">0</div></div><div class="stat"><div class="small">Suppliers</div><div class="n" id="sSup">0</div></div></div>
+    <div class="search"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input class="field" id="q" placeholder="Search supplier or invoice number"></div>
+    <div class="list" id="list"></div>
+    <p class="small"><button class="linkbtn" id="clear" type="button">Clear this list</button></p>
+    <details class="setup" id="setup"><summary>Pilot set-up: add invoices you have already paid</summary>
+      <form id="histForm">
+        <input type="hidden" name="access_code" id="histCode">
+        <label class="small" for="hist">Past invoices (select several)</label><input class="field" type="file" id="hist" name="files" multiple accept=".pdf,image/*">
+        <label class="small" for="dom">Email domain these suppliers normally use (optional)</label><input class="field" type="text" id="dom" name="email_domain">
+        <button class="btn" style="margin-top:4px" type="submit">Add to my payment history</button><div class="small" id="histOut"></div>
+      </form>
+    </details>
+  </section>
+</main>
 <script>
+const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const TITLE = { stop: ["Stop. Don't pay yet.", "Verify with the supplier on a number you already trust."], check: ["Check before paying.", "Some details need confirming."], ok: ["Looks safe to pay.", "All checks passed."] };
-document.getElementById("checkForm").addEventListener("submit", async e => {
-  e.preventDefault(); const b = document.getElementById("go"); b.disabled = true; b.textContent = "Checking...";
+const SPARK = '<svg class="sparkle" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c.6 4.8 3.2 8.4 10 10-6.8 1.6-9.4 5.2-10 10-.6-4.8-3.2-8.4-10-10 6.8-1.6 9.4-5.2 10-10z"/></svg>';
+const TITLE = { stop: ["Stop. Don't pay yet.", "Verify with the supplier on a number you already trust."], check: ["Check before paying.", "Some details need confirming."], ok: ["Looks safe to pay.", "All the checks passed."] };
+const store = { get(k) { try { return sessionStorage.getItem(k); } catch { return null; } }, set(k, v) { try { sessionStorage.setItem(k, v); } catch {} }, del(k) { try { sessionStorage.removeItem(k); } catch {} } };
+let code = "", mode = "", invFile = null, emlFile = null, busy = false;
+
+/* ---- views ---- */
+function show(view) {
+  for (const v of ["signin", "check", "history"]) $(v).hidden = v !== view;
+  $("nav").hidden = view === "signin";
+  document.querySelectorAll("nav [data-go]").forEach(b => b.classList.toggle("on", b.dataset.go === view));
+  if (view === "history") renderHistory();
+  if (view === "check") $("em").focus({ preventScroll: true });
+}
+function route() { if (!mode) return show("signin"); show(location.hash === "#/history" ? "history" : "check"); }
+function enter(m) {
+  mode = m; store.set("yahmi_mode", m); store.set("yahmi_code", code);
+  $("mode").textContent = m === "demo" ? "Demo mode: no payment history is used and nothing is saved. Please don't upload real invoices here." : "Pilot access: your own payment history is used.";
+  $("setup").hidden = m !== "pilot";
+  if (!location.hash) location.hash = "#/check";
+  route();
+}
+function signOut() { code = ""; mode = ""; store.del("yahmi_code"); store.del("yahmi_mode"); location.hash = ""; $("code").value = ""; route(); }
+document.querySelectorAll("nav [data-go]").forEach(b => b.addEventListener("click", () => { location.hash = "#/" + b.dataset.go; }));
+window.addEventListener("hashchange", route);
+$("out").addEventListener("click", signOut);
+$("demoBtn").addEventListener("click", async () => { code = ""; await login(); });
+$("signForm").addEventListener("submit", async e => { e.preventDefault(); code = $("code").value.trim(); await login(); });
+async function login() {
+  $("signErr").textContent = ""; $("signBtn").disabled = true;
   try {
-    const r = await fetch("/api/check", { method: "POST", body: new FormData(e.target) }); const j = await r.json();
-    const [t, s] = TITLE[j.verdict];
-    document.getElementById("out").innerHTML = `<div class="verdict ${j.verdict}">${t}<small>${s}</small></div>
-      <div class="card">${j.findings.map(f => `<div class="f"><span class="dot ${f.level}"></span><div>${esc(f.message)}<div class="src">${esc(f.source)}</div></div></div>`).join("")}</div>
-      <details class="card"><summary>What we read from the invoice (${esc(j.read_method)})</summary><pre>${esc(JSON.stringify(j.invoice, null, 1))}</pre></details>`;
-  } catch (err) { document.getElementById("out").innerHTML = `<div class="card">Could not check this file: ${esc(err.message)}</div>`; }
-  b.disabled = false; b.textContent = "Check before paying";
+    const r = await fetch("/api/whoami", { headers: code ? { "x-access-code": code } : {} }); const j = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(j.detail || "Could not sign in.");
+    enter(j.mode);
+  } catch (err) { $("signErr").textContent = err.message; }
+  $("signBtn").disabled = false;
+}
+
+/* ---- composer ---- */
+const em = $("em");
+function sync() {
+  em.style.height = "auto"; em.style.height = Math.min(em.scrollHeight, 200) + "px";
+  $("go").disabled = busy || !invFile;
+  const at = $("attached"); at.hidden = !(invFile || emlFile);
+  at.innerHTML = [["inv", invFile], ["eml", emlFile]].filter(x => x[1]).map(([k, f]) => `<span class="pill">${esc(f.name)}<button type="button" data-rm="${k}" aria-label="Remove ${esc(f.name)}">&times;</button></span>`).join("");
+}
+em.addEventListener("input", sync);
+em.addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) { e.preventDefault(); $("form").requestSubmit(); } });
+$("attached").addEventListener("click", e => { const k = e.target.dataset.rm; if (k === "inv") { invFile = null; $("inv").value = ""; } if (k === "eml") { emlFile = null; $("eml").value = ""; } sync(); });
+$("pick").addEventListener("click", () => $("inv").click());
+$("pickEml").addEventListener("click", () => $("eml").click());
+$("inv").addEventListener("change", e => { invFile = e.target.files[0] || null; sync(); });
+$("eml").addEventListener("change", async e => { emlFile = e.target.files[0] || null; if (emlFile && emlFile.size < 400000) { em.value = await emlFile.text(); } sync(); });
+document.querySelectorAll(".chip").forEach(c => c.addEventListener("click", () => { if (c.dataset.act === "invoice") $("inv").click(); else em.focus(); }));
+/* drag a file onto the page */
+addEventListener("dragover", e => e.preventDefault());
+addEventListener("drop", e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && mode) { invFile = f; sync(); } });
+
+/* ---- chat ---- */
+function add(html, cls = "") { const d = document.createElement("div"); d.className = "msg " + cls; d.innerHTML = html; $("hello")?.remove(); $("thread").appendChild(d); $("thread").scrollTop = $("thread").scrollHeight; return d; }
+function stepsFor(hasEmail) {
+  const s = ["Reading the invoice", "Checking the IBAN and bank code", "Checking the supplier's TRN and VAT", "Screening the sanctions lists", "Comparing with your payment history"];
+  if (hasEmail) s.splice(4, 0, "Reading the email and its sender");
+  return s;
+}
+function startThinking(box, steps) {
+  const ul = box.querySelector(".steps"); let n = -1;
+  const next = () => {
+    if (n + 1 >= steps.length) return;
+    ul.querySelector(".now")?.classList.replace("now", "done");
+    ul.querySelectorAll(".dots").forEach(d => d.remove());
+    n++; const li = document.createElement("li"); li.className = "now";
+    li.innerHTML = `<i></i>${esc(steps[n])}<span class="dots"><span>.</span><span>.</span><span>.</span></span>`; ul.appendChild(li);
+    $("thread").scrollTop = $("thread").scrollHeight;
+  };
+  next(); const t = setInterval(next, 1100);
+  return () => clearInterval(t);
+}
+$("form").addEventListener("submit", async e => {
+  e.preventDefault(); if (busy || !invFile) return;
+  busy = true; const file = invFile, text = em.value.trim();
+  add(`<div class="bubble"><span class="file"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>${esc(file.name)}</span>${text ? `<div class="snip">${esc(text.length > 220 ? text.slice(0, 220) + "…" : text)}</div>` : ""}</div>`, "user");
+  const reply = add(`<div class="avatar busy">${SPARK}</div><div class="answer"><div class="thinking"><div><span class="shimmer">Yahmi is thinking</span><span class="dots shimmer"><span>.</span><span>.</span><span>.</span></span></div><ul class="steps"></ul></div></div></div>`);
+  const stop = startThinking(reply, stepsFor(!!text));
+  const fd = new FormData(); fd.append("invoice", file); fd.append("email_text", text); fd.append("access_code", code);
+  invFile = emlFile = null; $("inv").value = $("eml").value = ""; em.value = ""; sync();
+  const t0 = Date.now();
+  try {
+    const r = await fetch("/api/check", { method: "POST", body: fd }); const j = await r.json().catch(() => ({}));
+    if (r.status === 401) { signOut(); return; }
+    if (!r.ok) throw new Error(j.detail || r.statusText);
+    const wait = Math.max(0, 1800 - (Date.now() - t0)); await new Promise(res => setTimeout(res, wait)); // let the animation finish a beat
+    stop(); answer(reply, j); remember(j);
+  } catch (err) { stop(); reply.innerHTML = `<div class="avatar">${SPARK.replace(' class="sparkle"', "")}</div><div class="answer"><div class="finds"><div class="f"><span class="dot red"></span><div>I could not check this file: ${esc(err.message)}<div class="src">Try again, or type the amounts and IBAN in by hand.</div></div></div></div></div>`; }
+  busy = false; sync();
 });
-document.getElementById("histForm").addEventListener("submit", async e => {
-  e.preventDefault(); document.getElementById("histBiz").value = document.getElementById("biz").value; const r = await fetch("/api/history", { method: "POST", body: new FormData(e.target) }); const j = await r.json();
-  document.getElementById("histOut").textContent = `Added ${j.added.length} supplier payment(s) to your history.`;
+function answer(box, j) {
+  const [t, s] = TITLE[j.verdict], i = j.invoice || {};
+  const rows = [["Supplier", i.supplier_name], ["TRN", i.supplier_trn], ["Invoice no.", i.invoice_number], ["Date", i.invoice_date], ["Subtotal", i.subtotal], ["VAT", i.vat], ["Total", i.total], ["IBAN", i.iban]].filter(r => r[1]);
+  box.innerHTML = `<div class="avatar">${SPARK.replace(' class="sparkle"', "")}</div><div class="answer">
+    <div class="verdict ${j.verdict}">${t}</div><div class="vsub">${s}</div>
+    <div class="finds">${j.findings.map((f, n) => `<div class="f" style="animation-delay:${n * 90}ms"><span class="dot ${f.level}"></span><div>${esc(f.message)}<div class="src">Source: ${esc(f.source)}</div></div></div>`).join("")}</div>
+    <details class="read"><summary>What I read from the invoice</summary>${rows.length ? `<div class="kv">${rows.map(([k, v]) => `<b>${esc(k)}</b><span>${esc(v)}</span>`).join("")}</div>` : '<div style="margin-top:8px">Nothing could be read with certainty.</div>'}</details></div>`;
+  box.scrollIntoView({ block: "start", behavior: "smooth" });  // start of the answer, not the bottom of a long list
+}
+
+/* ---- history (this browser only; not saved in demo mode) ---- */
+const KEY = "yahmi_checks";
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
+function remember(j) {
+  if (mode !== "pilot") return; const i = j.invoice || {};
+  try { localStorage.setItem(KEY, JSON.stringify([{ ts: Date.now(), supplier: i.supplier_name || "Unknown supplier", no: i.invoice_number || "", date: i.invoice_date || "", total: i.total || "", verdict: j.verdict }, ...load()].slice(0, 200))); } catch {}
+}
+function renderHistory() {
+  const all = load(), q = $("q").value.trim().toLowerCase();
+  const rows = all.filter(r => !q || (r.supplier + " " + r.no).toLowerCase().includes(q));
+  $("sChecked").textContent = all.length; $("sLook").textContent = all.filter(r => r.verdict !== "ok").length; $("sSup").textContent = new Set(all.map(r => r.supplier.toLowerCase())).size;
+  const L = { stop: "Stop", check: "Check", ok: "OK" };
+  $("list").innerHTML = rows.length ? rows.map(r => `<div class="row"><div class="ini">${esc(r.supplier[0] || "?").toUpperCase()}</div><div class="main"><div class="name">${esc(r.supplier)}<span class="tag ${r.verdict}">${L[r.verdict]}</span></div><div class="meta">${esc([r.no, r.date, new Date(r.ts).toLocaleDateString()].filter(Boolean).join(" · "))}</div></div><div class="amt">${r.total ? "AED " + esc(Number(r.total).toLocaleString(undefined, { minimumFractionDigits: 2 })) : ""}</div></div>`).join("")
+    : `<div class="empty">${mode === "demo" ? "History is not kept in demo mode." : "No checks yet. Check an invoice and it will show up here."}</div>`;
+}
+$("q").addEventListener("input", renderHistory);
+$("clear").addEventListener("click", () => { try { localStorage.removeItem(KEY); } catch {} renderHistory(); });
+$("histForm").addEventListener("submit", async e => {
+  e.preventDefault(); $("histCode").value = code; $("histOut").textContent = "Reading…";
+  const r = await fetch("/api/history", { method: "POST", body: new FormData(e.target) }); const j = await r.json().catch(() => ({}));
+  $("histOut").textContent = r.ok ? `Added ${j.added.length} supplier payment(s) to your payment history.` : (j.detail || "Could not add these invoices.");
 });
+
+/* ---- start ---- */
+code = store.get("yahmi_code") || ""; const m = store.get("yahmi_mode");
+if (m) enter(m); else route();
+sync();
 </script>
 </body>
 </html>

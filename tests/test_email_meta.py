@@ -125,5 +125,6 @@ def test_whole_app_stops_on_a_dmarc_fail():
     client = TestClient(app)
     text = raw(extra="Authentication-Results: mx.example.net; spf=fail; dkim=fail; dmarc=fail\n")
     with open(os.path.join(FIXTURES, "genuine_new.pdf"), "rb") as f:
-        out = client.post("/api/check", files={"invoice": ("g.pdf", f)}, data={"email_text": text, "business": "meta-test"}).json()
+        out = client.post("/api/check", files={"invoice": ("g.pdf", f)}, data={"email_text": text, "access_code": "c-meta"}).json()
     assert out["verdict"] == "stop" and any(x["check"] == "auth" and x["level"] == "red" for x in out["findings"])
+

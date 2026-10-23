@@ -18,24 +18,24 @@ def fixture(name):
 
 def seed():
     files = [("files", fixture(f"past/past_{i}.pdf")) for i in (1, 2, 3)]
-    r = client.post("/api/history", files=files, data={"business": BIZ, "email_domain": "falconbm.ae"})
+    r = client.post("/api/history", files=files, data={"access_code": "c-biz", "email_domain": "falconbm.ae"})
     assert len(r.json()["added"]) == 3
 
 
 def test_genuine_passes_and_fraud_stops():
     seed()
     ok = client.post("/api/check", files={"invoice": fixture("genuine_new.pdf")},
-                     data={"email_text": open(os.path.join(FIXTURES, "email_genuine.txt")).read(), "business": BIZ}).json()
+                     data={"email_text": open(os.path.join(FIXTURES, "email_genuine.txt")).read(), "access_code": "c-biz"}).json()
     assert ok["verdict"] == "ok"
     bad = client.post("/api/check", files={"invoice": fixture("fraud_new.pdf")},
-                      data={"email_text": open(os.path.join(FIXTURES, "email_fraud.txt")).read(), "business": BIZ}).json()
+                      data={"email_text": open(os.path.join(FIXTURES, "email_fraud.txt")).read(), "access_code": "c-biz"}).json()
     assert bad["verdict"] == "stop"
     checks = {f["check"] for f in bad["findings"] if f["level"] == "red"}
     assert {"history", "reply_to", "lookalike"} <= checks
 
 
 def test_new_account_is_amber_for_new_business():
-    r = client.post("/api/check", files={"invoice": fixture("genuine_new.pdf")}, data={"business": "Brand New Co"}).json()
+    r = client.post("/api/check", files={"invoice": fixture("genuine_new.pdf")}, data={"access_code": "c-new"}).json()
     assert any(f["check"] == "history" and f["level"] == "amber" for f in r["findings"])
 
 
