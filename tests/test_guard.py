@@ -104,3 +104,28 @@ def test_whoami_tells_the_mode_and_refuses_a_wrong_code():
     assert client.get("/api/whoami").json() == {"mode": "demo"}
     assert client.get("/api/whoami", headers={"x-access-code": "c-biz"}).json() == {"mode": "pilot"}
     assert client.get("/api/whoami", headers={"x-access-code": "nope"}).status_code == 401
+
+
+def test_check_log_is_per_business_pilot_only_and_clearable():
+    h = lambda c: {"x-access-code": c}
+    client.delete("/api/checks", headers=h("c-biz")); client.delete("/api/checks", headers=h("c-new"))
+    assert check("c-biz").status_code == 200
+    check()                                                           # demo: nothing is kept
+    mine = client.get("/api/checks", headers=h("c-biz")).json()["checks"]
+    assert len(mine) == 1 and mine[0]["verdict"] in ("stop", "check", "ok") and mine[0]["supplier"]
+    assert client.get("/api/checks", headers=h("c-new")).json()["checks"] == []   # another business sees none of it
+    assert client.get("/api/checks").status_code == 403                           # demo has no history
+    assert client.get("/api/checks", headers=h("nope")).status_code == 401
+    assert client.delete("/api/checks", headers=h("c-new")).json()["cleared"] == 0
+    assert client.delete("/api/checks", headers=h("c-biz")).json()["cleared"] == 1
+    assert client.get("/api/checks", headers=h("c-biz")).json()["checks"] == []
+
+
+def test_check_log_keeps_at_most_500_rows_per_business():
+    from yahmi.app import MEM
+    MEM.clear_checks("cap-test")
+    for n in range(MEM.MAX_CHECKS + 5):
+        MEM.log_check("cap-test", "S", str(n), None, None, "ok", ts=n)
+    rows = MEM.checks("cap-test")
+    assert len(rows) == MEM.MAX_CHECKS and rows[0]["no"] == str(MEM.MAX_CHECKS + 4)
+    MEM.clear_checks("cap-test")

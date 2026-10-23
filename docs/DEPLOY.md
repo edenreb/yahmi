@@ -35,3 +35,8 @@ The port is bound to 127.0.0.1 only: reach it from outside through the HTTPS tun
 
 ## 5. Backups
 The history database lives in the `yahmi-data` volume (it holds only keyed fingerprints). Back it up off the machine, and back up `.env`.
+
+## What is stored
+
+- Payment history and the shared network: keyed hashes only (see `yahmi/memory.py`).
+- Check log (pilot access codes only, never demo): supplier name, invoice number, date, total and verdict, in plain text in the same database, at most 500 rows per business, shown only to that business's code. A business clears it from the History page. Tell each pilot business before you turn it on, put it in the privacy notice, and keep the server's disk encrypted and its backups private.
