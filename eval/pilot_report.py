@@ -1,6 +1,6 @@
 """Measure Yahmi on a folder of real pilot invoices. Nothing leaves the machine and nothing is stored in the repo.
 
-Usage:  python3 eval/pilot_report.py PILOT_FOLDER [--labels labels.csv] [--out reports/name.json]
+Usage:  python3 eval/pilot_report.py PILOT_FOLDER [--labels labels.csv] [--out reports/name.json] [--split split.json --only dev] [--skip TEXT]
 
 PILOT_FOLDER holds the invoices (pdf, jpg, png), directly or in one sub-folder per business. Invoices are replayed in date
 order per business against a throw-away history, each one counted as paid afterwards (the invoices are assumed genuine), so the
@@ -85,7 +85,7 @@ def _cause(f):
     return c
 
 
-def run(folder, labels_path=None):
+def run(folder, labels_path=None, split=None, only=None, skip=()):
     from yahmi import app as A
     from yahmi.memory import Memory, supplier_id
 
@@ -107,6 +107,8 @@ def run(folder, labels_path=None):
                 if f.lower().endswith(EXTS) and not f.startswith("."):
                     full = os.path.join(dp, f)
                     rel = os.path.relpath(full, folder)
+                    if only and split.get(rel) != only or any(k in rel for k in skip):
+                        continue   # keep the holdout unscored; drop files that are not UAE invoices
                     files.append((rel.split(os.sep)[0] if os.sep in rel else os.path.basename(os.path.abspath(folder)), rel, full))
         by_biz = defaultdict(list)
         for biz, rel, full in sorted(files):
@@ -190,8 +192,13 @@ def main(argv=None):
     ap.add_argument("folder")
     ap.add_argument("--labels")
     ap.add_argument("--out")
+    ap.add_argument("--split", help="JSON {relative path: dev|holdout}; use with --only")
+    ap.add_argument("--only", choices=["dev", "holdout"], help="score just that split (holdout: once, at the end)")
+    ap.add_argument("--skip", action="append", default=[], help="skip files whose path contains this text (repeatable)")
     a = ap.parse_args(argv)
-    rep = run(a.folder, a.labels)
+    if bool(a.split) != bool(a.only):
+        ap.error("--split and --only go together")
+    rep = run(a.folder, a.labels, json.load(open(a.split)) if a.split else None, a.only, a.skip)
     n = rep["invoices"]
     print(f"{n} invoices {rep['businesses']}  languages {rep['language']}  read by {rep['method']}")
     print("verdicts", rep["verdicts"], "| flagged per 100:", rep["flagged_per_100"], "| excluding first-payment-only:", rep["flagged_per_100_excluding_first_payment"])
