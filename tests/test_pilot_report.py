@@ -37,3 +37,15 @@ def test_console_output_is_masked(tmp_path, capsys):
     out = capsys.readouterr().out
     assert "AE" not in out and "Falcon" not in out and "100384920571003" not in out
     assert (tmp_path / "out" / "r.json").exists()
+
+
+def test_only_and_skip_filter_files(tmp_path):
+    biz = tmp_path / "b"
+    biz.mkdir()
+    for n in ("a.pdf", "b.pdf", "c.pdf"):
+        shutil.copy(os.path.join(FX, "genuine_new.pdf"), biz / n)
+    split = {"b/a.pdf": "dev", "b/b.pdf": "holdout", "b/c.pdf": "dev"}
+    assert pilot_report.run(str(tmp_path), split=split, only="dev")["invoices"] == 2
+    assert pilot_report.run(str(tmp_path), split=split, only="dev", skip=("c.pdf",))["invoices"] == 1
+    assert pilot_report.run(str(tmp_path))["invoices"] == 3
+
