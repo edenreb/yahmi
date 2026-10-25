@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, TensorDataset
 from transformers import AutoModelForSequenceClassification, AutoTokenizer, get_linear_schedule_with_warmup
 
 MODEL_NAME = os.environ.get("ROBERTA_MODEL", "roberta-base")
-MAX_LEN = int(os.environ.get("ROBERTA_MAX_LEN", "192"))
+MAX_LEN = int(os.environ.get("ROBERTA_MAX_LEN", "128"))
 BATCH_SIZE = int(os.environ.get("ROBERTA_BATCH", "16"))
 EPOCHS = int(os.environ.get("ROBERTA_EPOCHS", "2"))
 LR = float(os.environ.get("ROBERTA_LR", "2e-5"))
@@ -24,10 +24,19 @@ def tokenize(tokenizer, texts):
     return tokenizer(texts, truncation=True, max_length=MAX_LEN, padding="max_length", return_tensors="pt")
 
 
-def train_roberta(texts, labels):
+def train_roberta(texts, labels, checkpoint_dir=None):
     seed_all(SEED)
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-    model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
+    state_path = os.path.join(checkpoint_dir, "training_state.pt") if checkpoint_dir else None
+    start_epoch = 0
+    if state_path and os.path.exists(state_path):
+        tokenizer = AutoTokenizer.from_pretrained(checkpoint_dir)
+        model = AutoModelForSequenceClassification.from_pretrained(checkpoint_dir)
+        state = torch.load(state_path, map_location="cpu", weights_only=False)
+        start_epoch = int(state["epoch"])
+        print(f"resuming from epoch {start_epoch}", flush=True)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+        model = AutoModelForSequenceClassification.from_pretrained(MODEL_NAME, num_labels=2)
     enc = tokenize(tokenizer, texts)
     dataset = TensorDataset(enc["input_ids"], enc["attention_mask"], torch.tensor(labels))
     loader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
@@ -39,8 +48,11 @@ def train_roberta(texts, labels):
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     steps = len(loader) * EPOCHS
     scheduler = get_linear_schedule_with_warmup(optimizer, int(0.1 * steps), steps)
+    if state_path and os.path.exists(state_path):
+        optimizer.load_state_dict(state["optimizer"])
+        scheduler.load_state_dict(state["scheduler"])
     model.train()
-    for epoch in range(EPOCHS):
+    for epoch in range(start_epoch, EPOCHS):
         running = 0.0
         for input_ids, attention_mask, targets in loader:
             optimizer.zero_grad(set_to_none=True)
@@ -52,6 +64,18 @@ def train_roberta(texts, labels):
             scheduler.step()
             running += float(loss.item())
         print(f"epoch {epoch + 1}/{EPOCHS} loss {running / len(loader):.4f}", flush=True)
+        if checkpoint_dir:
+            os.makedirs(checkpoint_dir, exist_ok=True)
+            model.save_pretrained(checkpoint_dir, safe_serialization=True)
+            tokenizer.save_pretrained(checkpoint_dir)
+            torch.save(
+                {
+                    "epoch": epoch + 1,
+                    "optimizer": optimizer.state_dict(),
+                    "scheduler": scheduler.state_dict(),
+                },
+                state_path,
+            )
     model.eval()
     return model, tokenizer
 

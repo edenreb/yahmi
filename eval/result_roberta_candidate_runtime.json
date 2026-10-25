@@ -1,0 +1,32 @@
+{
+ "candidate": "roberta_base_email_v1",
+ "status": "candidate",
+ "base_model": "roberta-base",
+ "max_len": 128,
+ "model_size_bytes": 498612824,
+ "model_sha256": "ae1d3fcc4cd70a4b1199b4148d02fd87748ed77039b9b6c54a6839ad9210f721",
+ "metadata_model_sha256": "ae1d3fcc4cd70a4b1199b4148d02fd87748ed77039b9b6c54a6839ad9210f721",
+ "hash_matches": true,
+ "load_seconds": 1.027,
+ "one_email_seconds": 0.083,
+ "batch_16_seconds": 0.732,
+ "per_email_batch_seconds": 0.0458,
+ "raw_score_range": [
+  0.000188,
+  0.999698
+ ],
+ "calibrated_score_range": [
+  0.054249,
+  0.937039
+ ],
+ "calibration": {
+  "temperature": 3.001015,
+  "amber_threshold": 0.86024,
+  "red_threshold": 0.91058
+ },
+ "sample_note": "The 16 scored emails are training data; only range/latency are reported, not accuracy.",
+ "caveats": [
+  "CPU-only single-process benchmark; not a concurrency or memory test.",
+  "The candidate has no fresh source-disjoint holdout result."
+ ]
+}

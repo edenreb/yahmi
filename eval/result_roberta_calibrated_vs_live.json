@@ -1,0 +1,258 @@
+{
+ "dataset": "data/bec_realworld.json + data/bec_realworld_more.json",
+ "n": 348,
+ "fraud": 212,
+ "legit": -560,
+ "sources": 211,
+ "setup": "source-grouped 5-fold OOF scores; RoBERTa temperature and thresholds fitted on the same OOF data",
+ "calibration": {
+  "temperature": 3.001015,
+  "amber_threshold": 0.86024,
+  "red_threshold": 0.91058
+ },
+ "models": {
+  "bec_final_recipe": {
+   "n_fraud": 212,
+   "n_legit": 136,
+   "amber_threshold": 0.62,
+   "red_threshold": 0.8,
+   "fraud_caught_amber": 153,
+   "fraud_caught_red": 110,
+   "false_alarms_amber": 13,
+   "false_alarms_red": 3,
+   "auc": 0.9232,
+   "average_precision": 0.9449,
+   "amber_ci": [
+    65.8,
+    77.8
+   ],
+   "red_ci": [
+    45.2,
+    58.5
+   ],
+   "fa_amber_ci": [
+    5.7,
+    15.7
+   ],
+   "fa_red_ci": [
+    0.8,
+    6.3
+   ]
+  },
+  "roberta_calibrated": {
+   "n_fraud": 212,
+   "n_legit": 136,
+   "amber_threshold": 0.86024,
+   "red_threshold": 0.91058,
+   "fraud_caught_amber": 179,
+   "fraud_caught_red": 162,
+   "false_alarms_amber": 13,
+   "false_alarms_red": 3,
+   "auc": 0.9499,
+   "average_precision": 0.9707,
+   "amber_ci": [
+    78.9,
+    88.7
+   ],
+   "red_ci": [
+    70.3,
+    81.6
+   ],
+   "fa_amber_ci": [
+    5.7,
+    15.7
+   ],
+   "fa_red_ci": [
+    0.8,
+    6.3
+   ]
+  }
+ },
+ "comparison_amber": {
+  "pair": "roberta calibrated vs live, amber",
+  "amber_capture_only_first": 43,
+  "amber_capture_only_second": 17,
+  "amber_capture_mcnemar_p": 0.0021,
+  "amber_false_alarm_only_first": 9,
+  "amber_false_alarm_only_second": 9,
+  "amber_false_alarm_mcnemar_p": 1.0
+ },
+ "comparison_red": {
+  "pair": "roberta calibrated vs live, red",
+  "amber_capture_only_first": 61,
+  "amber_capture_only_second": 9,
+  "amber_capture_mcnemar_p": 0.0,
+  "amber_false_alarm_only_first": 2,
+  "amber_false_alarm_only_second": 2,
+  "amber_false_alarm_mcnemar_p": 1.0
+ },
+ "by_type": {
+  "bec_final_recipe": {
+   "": {
+    "n": 46,
+    "amber": 30,
+    "red": 20,
+    "false_alarms": 2
+   },
+   "bank_change": {
+    "n": 9,
+    "amber": 6,
+    "red": 4,
+    "false_alarms": 0
+   },
+   "ceo_wire": {
+    "n": 26,
+    "amber": 19,
+    "red": 13,
+    "false_alarms": 0
+   },
+   "fake_invoice": {
+    "n": 28,
+    "amber": 18,
+    "red": 7,
+    "false_alarms": 0
+   },
+   "gift_card": {
+    "n": 46,
+    "amber": 43,
+    "red": 39,
+    "false_alarms": 0
+   },
+   "invoice_thread": {
+    "n": 11,
+    "amber": 3,
+    "red": 1,
+    "false_alarms": 0
+   },
+   "legit_bank_change": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 1
+   },
+   "legit_invoice": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 1
+   },
+   "legit_other": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 3
+   },
+   "legit_payment_notice": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 6
+   },
+   "other": {
+    "n": 18,
+    "amber": 9,
+    "red": 5,
+    "false_alarms": 0
+   },
+   "payroll": {
+    "n": 23,
+    "amber": 21,
+    "red": 19,
+    "false_alarms": 0
+   },
+   "recon": {
+    "n": 5,
+    "amber": 4,
+    "red": 2,
+    "false_alarms": 0
+   }
+  },
+  "roberta_calibrated": {
+   "": {
+    "n": 46,
+    "amber": 38,
+    "red": 35,
+    "false_alarms": 1
+   },
+   "bank_change": {
+    "n": 9,
+    "amber": 8,
+    "red": 8,
+    "false_alarms": 0
+   },
+   "ceo_wire": {
+    "n": 26,
+    "amber": 24,
+    "red": 21,
+    "false_alarms": 0
+   },
+   "fake_invoice": {
+    "n": 28,
+    "amber": 19,
+    "red": 15,
+    "false_alarms": 0
+   },
+   "gift_card": {
+    "n": 46,
+    "amber": 41,
+    "red": 38,
+    "false_alarms": 0
+   },
+   "invoice_thread": {
+    "n": 11,
+    "amber": 9,
+    "red": 9,
+    "false_alarms": 0
+   },
+   "legit_bank_change": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 1
+   },
+   "legit_invoice": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 2
+   },
+   "legit_other": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 2
+   },
+   "legit_payment_notice": {
+    "n": 0,
+    "amber": 0,
+    "red": 0,
+    "false_alarms": 7
+   },
+   "other": {
+    "n": 18,
+    "amber": 12,
+    "red": 9,
+    "false_alarms": 0
+   },
+   "payroll": {
+    "n": 23,
+    "amber": 23,
+    "red": 22,
+    "false_alarms": 0
+   },
+   "recon": {
+    "n": 5,
+    "amber": 5,
+    "red": 5,
+    "false_alarms": 0
+   }
+  }
+ },
+ "caveats": [
+  "OOF development comparison, not a fresh holdout.",
+  "Temperature and thresholds were fitted/selected on these same OOF scores, so the operating points are optimistic and frozen only for the future holdout.",
+  "The live recipe was retrained on each fold because the live artifact trained on all 348 real emails.",
+  "Public/synthetic training text may share wording with real sources; both models saw the same pool.",
+  "No candidate artifact was scored here; this evaluates the calibrated policy, not the saved all-data model."
+ ]
+}
