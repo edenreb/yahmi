@@ -3,7 +3,7 @@ the IBANs are the public documentation examples from the IBAN registry."""
 from datetime import date
 from decimal import Decimal
 
-from yahmi.extract import find_amounts, find_date, find_iban, find_supplier, find_trns, parse_date
+from yahmi.extract import find_amounts, find_date, find_iban, find_invoice_number, find_supplier, find_trns, parse_date
 from yahmi.rules import iban_valid
 
 
@@ -107,3 +107,57 @@ def test_supplier_name_says_how_sure_it_is():
     assert find_supplier_detail("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n") == ("Northwind Traders", False)
     assert parse("TAX INVOICE\nNorthwind Traders\n12 High Street\nBill To: Acme\n").extra["supplier_confident"] is False
     assert parse("TAX INVOICE\nFalcon Building Materials LLC\nAl Quoz, Dubai\nBill To: Acme\n").extra["supplier_confident"] is True
+
+
+def test_invoice_number_below_a_header_row_not_a_date():
+    # invented layout: "Invoice No." is one column of a header row; the next header word is not a value
+    assert find_invoice_number("Invoice No.      Date        Ref\nINV-20481        05-Mar-24") == "INV-20481"
+    # a month-name date under the label is not an invoice number
+    assert find_invoice_number("Invoice No.      Date\n                 05-Mar-24") is None
+
+
+def test_invoice_number_ti_no_label():
+    # "TI No." (tax invoice no.) is a document label; a bare "No." or an order/DO number is not
+    assert find_invoice_number("Customer A/c: Example Trading LLC        TI No.: AB/12/2025/00417\nDO No: 8841") == "AB/12/2025/00417"
+    assert find_invoice_number("Customer A/c: Example Trading LLC\nDO No: 8841") is None
+
+
+def test_invoice_number_in_flattened_date_header_row():
+    # OCR flattens "Date | Inv. No. | Project | P.O. Ref." into one line and other lines may sit before the data row
+    t = "Date   Inv. No.   Project Name   P.O. Ref. No.\nBill To:\nExample Project Name\n25-01-2024 AB-INV-2024-0001 XX-PO-000118"
+    assert find_invoice_number(t) == "AB-INV-2024-0001"
+    # without a date header the same row gives nothing
+    assert find_invoice_number("Project   P.O. Ref.\n25-01-2024 AB-2024-0001 XX-PO-000118") is None
+
+
+def test_invoice_number_bare_no_header_row_and_unlabelled_inv_token():
+    # header row starting with a bare "No"; the data row starts with the number, then a TRN (invented numbers)
+    t = "No   Cust VAT Reg.   Tax Invoice   VAT Reg.   Tax Date\n4721   100000000000001      100000000000002   27/01/2024"
+    assert find_invoice_number(t) == "4721"
+    # a bare "No" header without VAT Reg / Tax Date is an item table, not an invoice number
+    assert find_invoice_number("No   Description   Qty\n12   100000000000001 widgets") is None
+    # no label at all: an INV-prefixed token under the title, or after a dotted "Ref."
+    assert find_invoice_number("TAX INVOICE\n#INV-0000123\nPO DATE : 25/08/2025") == "INV-0000123"
+    assert find_invoice_number("Ref. ........ AB/CD/INV6\nTAX INVOICE") == "AB/CD/INV6"
+    # "INVOICE :" with no "No"
+    assert find_invoice_number("DATE :   January 22, 2024\nINVOICE :   3150088\nYOUR ORDER NO.   AB-PO-9912") == "3150088"
+
+
+def test_invoice_number_bare_no_stray_char_and_joined_letters():
+    # bare "No" beside a Date line, no colon (invented values); a DO / LPO / TRN number does not count
+    assert find_invoice_number("Customer Code   AB12   No   731905\nName and Address   Example LLC   Date   30/06/2025") == "731905"
+    assert find_invoice_number("Customer Code   AB12   DO No   731905\nName and Address   Example LLC   Date   30/06/2025") is None
+    # a misread colon between label and value: "Invoice No. 9 ABC004738"
+    assert find_invoice_number("Customer :   Invoice No. 9 ABC004738\nDate : 29-January-2024") == "ABC004738"
+    # letters + space + digits ("ABC 0204") in a cell next to a date, with "Invoice" in the header above
+    assert find_invoice_number("Date   Invoice   LPO No\nAddress PO Box 1   25-01-2024 ABC 0204   XX-PO-0086") == "ABC0204"
+    # a stray one-letter "Invoice No. A 123" is not joined into a number by the new rule
+    assert find_invoice_number("Invoice No: AB") is None
+
+
+def test_total_with_glued_currency_beats_line_items_that_add_up_to_the_subtotal():
+    # item rows 1,400.00 + 260.00 = 1,660.00 (the subtotal) must not be read as subtotal + VAT = total
+    t = ("1   Item one   10.00   140.00   1,400.00\n2   Item two   1.00   260.00   260.00\n\n"
+         "Sub Total   1,660.00\nVAT 5% (5%)   83.00\nGrand Total   AED1,743.00")
+    assert find_amounts(t) == (Decimal("1660.00"), Decimal("83.00"), Decimal("1743.00"))
+

@@ -134,8 +134,8 @@ def _num(s: str) -> Decimal | None:
         return None
 
 
-# An amount with two decimals, in any common layout: 1,234.56  1.234,56  1 234.56  1'234.56  1234,56  (12.00)  -12.00
-_AMT = re.compile(r"(?<![\w.,'])(\(?-?)\s?((?:\d{1,3}(?:[ \u00a0',.]\d{3})+|\d+)[.,]\d{2})(?![\d]|[.,]\d)\)?")
+# An amount with two decimals (may follow a glued currency code, "AED1,743.00"), in any common layout: 1,234.56  1.234,56  1 234.56  1'234.56  1234,56  (12.00)  -12.00
+_AMT = re.compile(r"(?:(?<![\w.,'])|(?<=AED)|(?<=USD)|(?<=SAR)|(?<=EUR)|(?<=GBP)|(?<=INR))(\(?-?)\s?((?:\d{1,3}(?:[ \u00a0',.]\d{3})+|\d+)[.,]\d{2})(?![\d]|[.,]\d)\)?")
 
 
 def _amounts(text: str) -> list[Decimal]:
@@ -361,14 +361,14 @@ def find_amounts(text: str):
     return sub, vat, tot
 
 
-# Invoice-number labels: a document word (invoice / inv / bill / document / receipt) plus a number
+# Invoice-number labels: a document word (invoice / inv / bill / document / receipt / TI = tax invoice) plus a number
 # word (no / number / # / ref / id / code / serial); bare "Reference" / "Our Ref" / "Serial" count too
 # but rank below. Tolerates common OCR slips (0 for o, 1/l for i, "Ret" for "Ref", "1D" for "ID").
 _NO = r"n[o0](?![A-Za-z])[.,]?"
 _INV_LABEL = re.compile(r"""(?:
-      (?P<doc>(?:tax\s*)?(?:[il1]nv[o0]?[il1]ce|[il1]n[vy]|bill|d[o0]c(?:ument)?|receipt|fatoorah)[.,]?\s*
+      (?P<doc>(?:tax\s*)?(?:[il1]nv[o0]?[il1]ce|[il1]n[vy]|bill|d[o0]c(?:ument)?|receipt|fatoorah|ti)[.,]?\s*
           (?:NO|num(?:ber)?[.,]?|nbr|\#|serial(?:\s*NO|\s*number)?|re[ft](?:erence)?(?![A-Za-z])[.,]?(?:\s*NO)?|[il1(|]d(?![A-Za-z])|c[o0a]de))
-    | (?P<gen>serial(?:\s*(?:NO|number|\#))?|(?:our\s+)?re[ft](?:erence)?(?![A-Za-z])[.,]?(?:\s*(?:NO|number|\#))?)
+    | (?P<gen>serial(?:\s*(?:NO|number|\#))?|(?:our\s+)?re[ft](?:erence)?(?![A-Za-z])[.,]?(?:\s*(?:NO|number|\#))?|[il1]nv[o0]?[il1]ce\s*:)
     | (?P<ar>رقم\s*الفاتورة)
     )""".replace("NO", _NO), re.I | re.X)
 # words that make a "ref / no." label belong to someone else's document
@@ -402,6 +402,8 @@ def _inv_value_ok(v: str) -> bool:
         return False
     if re.fullmatch(r"\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}|\d{4}[/.\-]\d{1,2}[/.\-]\d{1,2}", v):
         return False  # date
+    if re.fullmatch(r"\d{1,2}[-/ ]" + _MON + r"[a-z]*\.?[-/ ,]*\d{2,4}|" + _MON + r"[a-z]*\.?[-/ ]\d{1,2},?[-/ ]\d{2,4}", v, re.I):
+        return False  # date with a month name ("12-Mar-24")
     if re.fullmatch(r"\d{15}", v) or re.fullmatch(r"AE\d{2}[\dA-Z]{5,}", v, re.I) and len(v) >= 15:
         return False  # TRN / IBAN
     if re.fullmatch(r"(?:\+?971|00971|0)\d{8,9}", v):
@@ -418,6 +420,7 @@ def _inv_from(rest: str) -> str | None:
     rest = re.sub(r"^[\s:#.,\-–=|]*", "", rest)
     rest = re.sub(r"^n[o0][.,]?\s*[:#]?\s*(?=\w)", "", rest, flags=re.I)  # "Bill Number: No. 123"
     rest = re.sub(r"^[:#]\s*", "", rest)
+    rest = re.sub(r"^[0-9Oo|!]\s+(?=[A-Za-z0-9]*[A-Za-z]{2,}[A-Za-z0-9]*\d)", "", rest)  # lone misread ":" before "ABC004738"
     m = _INV_TOKEN.match(rest)
     if not m:
         return None
@@ -431,6 +434,7 @@ def _inv_from(rest: str) -> str | None:
         if re.match(r"\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}", p) or re.fullmatch(r"\d{1,3}(?:,\d{3})*\.\d{2}", p):
             break
         joint = v[-1] in "-/~" or p[0] in "-/~" or (v[-1].isdigit() and p[0].isdigit()) \
+            or (re.fullmatch(r"[A-Za-z]{2,4}", v) and re.fullmatch(r"\d{3,6}", p)) \
             or (re.search(r"(?:^|[-/])[A-Za-z]{1,3}$", v) and re.search(r"[-/~]", p) and re.search(r"\d", p))
         if not joint or not _inv_value_ok(_inv_fix(v + p)):
             break
@@ -458,8 +462,8 @@ def find_invoice_number(text: str) -> str | None:
                 continue
             tier = 0 if (m.group("doc") or m.group("ar")) else 1
             v = _inv_from(line[m.end():])
-            if v is None and not re.search(r"\w", re.split(r"\s{2,}", line[m.end():].strip(" :#.-"), maxsplit=1)[0] or ""):
-                # label stands alone in its cell: look below it, same column first
+            if v is None and not re.search(r"\d", re.split(r"\s{2,}", line[m.end():].strip(" :#.-"), maxsplit=1)[0] or ""):
+                # label stands alone in its cell (the next cell may be another header such as "Date"): look below it, same column first
                 for nxt in lines[i + 1:i + 3]:
                     if not nxt.strip():
                         continue
@@ -474,10 +478,48 @@ def find_invoice_number(text: str) -> str | None:
                         last = nxt.split()[-1]
                         v = _inv_from(last) if re.search(r"\d{3}", last) else None
                     break
+            if v is None and re.search(r"(?:^|\s)date\W*$", line[:a], re.I):
+                # header row "Date | Inv. No. | ..." flattened by OCR into one line: the data row is the next line that
+                # starts with a date, and the invoice number is the token after it (other lines, e.g. "Bill To", may sit between)
+                for nxt in lines[i + 1:i + 6]:
+                    dm = re.match(r"\s*\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}\s+(\S.*)", nxt)
+                    if dm:
+                        v = _inv_from(dm.group(1))
+                        break
             if v is None:
                 continue
             if best is None or (tier, i) < best[:2]:
                 best = (tier, i, v)
+    if best is None:
+        # header row that starts with a bare "No" ("No | Cust VAT Reg. | Tax Invoice | VAT Reg. | Tax Date"): the data row below
+        # starts with that number, followed by a TRN
+        for i, line in enumerate(lines):
+            if re.match(r"\s*no\.?(?:\s|$)", line, re.I) and re.search(r"vat\s*reg|tax\s*date", line, re.I):
+                for nxt in lines[i + 1:i + 4]:
+                    dm = re.match(r"\s*(\w{2,10})\s+\d{15}\b", nxt)
+                    if dm and _inv_value_ok(dm.group(1)):
+                        return dm.group(1)
+    if best is None:
+        # bare "No : 123456" in a header block that has a Date line right below (not DO / LPO / TRN / VAT / SO numbers)
+        for i, line in enumerate(lines[:40]):
+            m = re.search(r"(?:^|\s)no\s*:?\s*(\d{4,8})\s*$", line, re.I)
+            if m and not re.search(r"(?:do|so|trn|vat|tel|lpo)\.?\s*$", line[:m.start()], re.I) and not _INV_FOREIGN.search(line[:m.start()]) \
+                    and any(re.search(r"\bdate\b", l, re.I) for l in lines[i + 1:i + 3]):
+                return m.group(1)
+    if best is None:
+        for i, line in enumerate(lines[:40]):
+            dm = re.search(r"\d{1,2}[/.\-]\d{1,2}[/.\-]\d{2,4}\s+([A-Z]{2,4} \d{3,6})\b", line)
+            if dm and any(re.search(r"invoice", l, re.I) for l in lines[max(0, i - 6):i]):
+                v = _inv_from(dm.group(1))
+                if v:
+                    return v
+    if best is None:
+        # no usable label: an INV-prefixed token near the top ("#INV-0000123" under the title, "AB/CD/INV6" after a dotted "Ref.")
+        for line in lines[:40]:
+            for tok in line.split():
+                t = tok.strip("#:,.;()")
+                if re.search(r"INV[-/]?\d", t) and len(t) <= 24 and not _INV_FOREIGN.search(line[:line.find(tok)]):
+                    return _inv_fix(t)
     return best[2] if best else None
 
 
