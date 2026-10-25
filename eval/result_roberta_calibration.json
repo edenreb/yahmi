@@ -1,0 +1,71 @@
+{
+ "dataset": "data/bec_realworld.json + data/bec_realworld_more.json",
+ "n": 348,
+ "fraud": 212,
+ "legit": 136,
+ "sources": 211,
+ "source_result": "result_cv_roberta_vs_live.json",
+ "source_result_sha256": "8febcc6401df5ee78b2b0a037355068931c064bd134d565017d51b6ac8b9441f",
+ "method": "temperature scaling on source-grouped OOF scores",
+ "temperature": 3.001015,
+ "raw": {
+  "n_fraud": 212,
+  "n_legit": 136,
+  "auc": 0.9499,
+  "average_precision": 0.9707,
+  "log_loss": 0.6111,
+  "brier": 0.1117
+ },
+ "calibrated": {
+  "n_fraud": 212,
+  "n_legit": 136,
+  "auc": 0.9499,
+  "average_precision": 0.9707,
+  "log_loss": 0.3157,
+  "brier": 0.0934
+ },
+ "live_recipe_fixed_thresholds": {
+  "amber_0_62": {
+   "caught": 153,
+   "false_alarms": 13
+  },
+  "red_0_80": {
+   "caught": 110,
+   "false_alarms": 3
+  }
+ },
+ "operating_points_development": {
+  "amber_equal_live_false_alarms": {
+   "threshold": 0.86024,
+   "caught": 179,
+   "false_alarms": 13
+  },
+  "red_equal_live_false_alarms": {
+   "threshold": 0.91058,
+   "caught": 162,
+   "false_alarms": 3
+  },
+  "red_zero_false_alarms": {
+   "threshold": 0.92775,
+   "caught": 102,
+   "false_alarms": 0
+  }
+ },
+ "calibrated_at_fixed_thresholds": {
+  "amber_0_62": {
+   "threshold": 0.62,
+   "caught": 190,
+   "false_alarms": 21
+  },
+  "red_0_80": {
+   "threshold": 0.8,
+   "caught": 184,
+   "false_alarms": 18
+  }
+ },
+ "caveats": [
+  "Temperature is fitted on fold-model out-of-fold scores, not on the final all-data model.",
+  "Thresholds were selected on development CV at live false-alarm budgets; they are provisional and must be frozen before the fresh holdout is scored.",
+  "This is not a holdout result and does not support promotion."
+ ]
+}
