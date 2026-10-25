@@ -2,7 +2,7 @@
  "dataset": "data/bec_realworld.json + data/bec_realworld_more.json",
  "n": 348,
  "fraud": 212,
- "legit": -560,
+ "legit": 136,
  "sources": 211,
  "setup": "source-grouped 5-fold OOF scores; RoBERTa temperature and thresholds fitted on the same OOF data",
  "calibration": {
@@ -10,7 +10,7 @@
   "amber_threshold": 0.86024,
   "red_threshold": 0.91058
  },
- "models": {
+ "fixed_live_thresholds": {
   "bec_final_recipe": {
    "n_fraud": 212,
    "n_legit": 136,
@@ -68,8 +68,49 @@
    ]
   }
  },
- "comparison_amber": {
-  "pair": "roberta calibrated vs live, amber",
+ "matched_false_alarms": {
+  "amber": {
+   "budget": 13,
+   "live_recipe": {
+    "threshold": 0.61139,
+    "caught": 154,
+    "false_alarms": 13
+   },
+   "roberta": {
+    "threshold": 0.86024,
+    "caught": 179,
+    "false_alarms": 13
+   }
+  },
+  "red": {
+   "budget": 3,
+   "live_recipe": {
+    "threshold": 0.75223,
+    "caught": 129,
+    "false_alarms": 3
+   },
+   "roberta": {
+    "threshold": 0.91058,
+    "caught": 162,
+    "false_alarms": 3
+   }
+  },
+  "red_zero": {
+   "budget": 0,
+   "live_recipe": {
+    "threshold": 0.93118,
+    "caught": 23,
+    "false_alarms": 0
+   },
+   "roberta": {
+    "threshold": 0.92775,
+    "caught": 102,
+    "false_alarms": 0
+   }
+  }
+ },
+ "comparison_fixed_amber": {
+  "pair": "roberta calibrated vs live at 0.62/0.80, amber",
   "amber_capture_only_first": 43,
   "amber_capture_only_second": 17,
   "amber_capture_mcnemar_p": 0.0021,
@@ -77,8 +118,8 @@
   "amber_false_alarm_only_second": 9,
   "amber_false_alarm_mcnemar_p": 1.0
  },
- "comparison_red": {
-  "pair": "roberta calibrated vs live, red",
+ "comparison_fixed_red": {
+  "pair": "roberta calibrated vs live at 0.62/0.80, red",
   "amber_capture_only_first": 61,
   "amber_capture_only_second": 9,
   "amber_capture_mcnemar_p": 0.0,
@@ -86,12 +127,39 @@
   "amber_false_alarm_only_second": 2,
   "amber_false_alarm_mcnemar_p": 1.0
  },
- "by_type": {
+ "comparison_matched_amber": {
+  "pair": "roberta calibrated vs live at equal amber false alarms",
+  "amber_capture_only_first": 42,
+  "amber_capture_only_second": 17,
+  "amber_capture_mcnemar_p": 0.0031,
+  "amber_false_alarm_only_first": 9,
+  "amber_false_alarm_only_second": 9,
+  "amber_false_alarm_mcnemar_p": 1.0
+ },
+ "comparison_matched_red": {
+  "pair": "roberta calibrated vs live at equal red false alarms",
+  "amber_capture_only_first": 51,
+  "amber_capture_only_second": 18,
+  "amber_capture_mcnemar_p": 0.0002,
+  "amber_false_alarm_only_first": 2,
+  "amber_false_alarm_only_second": 2,
+  "amber_false_alarm_mcnemar_p": 1.0
+ },
+ "comparison_matched_red_zero": {
+  "pair": "roberta calibrated vs live at zero red false alarms",
+  "amber_capture_only_first": 84,
+  "amber_capture_only_second": 5,
+  "amber_capture_mcnemar_p": 0.0,
+  "amber_false_alarm_only_first": 0,
+  "amber_false_alarm_only_second": 0,
+  "amber_false_alarm_mcnemar_p": 1.0
+ },
+ "by_type_matched": {
   "bec_final_recipe": {
    "": {
     "n": 46,
     "amber": 30,
-    "red": 20,
+    "red": 25,
     "false_alarms": 2
    },
    "bank_change": {
@@ -103,25 +171,25 @@
    "ceo_wire": {
     "n": 26,
     "amber": 19,
-    "red": 13,
+    "red": 15,
     "false_alarms": 0
    },
    "fake_invoice": {
     "n": 28,
     "amber": 18,
-    "red": 7,
+    "red": 13,
     "false_alarms": 0
    },
    "gift_card": {
     "n": 46,
     "amber": 43,
-    "red": 39,
+    "red": 40,
     "false_alarms": 0
    },
    "invoice_thread": {
     "n": 11,
     "amber": 3,
-    "red": 1,
+    "red": 2,
     "false_alarms": 0
    },
    "legit_bank_change": {
@@ -150,8 +218,8 @@
    },
    "other": {
     "n": 18,
-    "amber": 9,
-    "red": 5,
+    "amber": 10,
+    "red": 9,
     "false_alarms": 0
    },
    "payroll": {

@@ -15,6 +15,7 @@ sys.path.insert(0, ROOT)
 sys.path.insert(0, HERE)
 
 from cv_roberta_live import load_real  # noqa: E402
+from calibrate_roberta import at_false_alarm_budget  # noqa: E402
 from eval_holdout_v5 import compare  # noqa: E402
 
 CV_RESULT = os.path.join(HERE, "result_cv_roberta_vs_live.json")
@@ -64,6 +65,15 @@ def block(p, y, amber, red):
     }
 
 
+def counts(p, y, threshold):
+    flagged = p >= threshold
+    return {
+        "threshold": threshold,
+        "caught": int((flagged & y).sum()),
+        "false_alarms": int((flagged & ~y).sum()),
+    }
+
+
 def by_type(p, y, types, amber, red):
     flagged = p >= amber
     red_flagged = p >= red
@@ -83,18 +93,35 @@ def main():
     cv = json.load(open(CV_RESULT, encoding="utf-8"))
     calibration = json.load(open(CALIBRATION, encoding="utf-8"))
     texts, y, groups, types = load_real()
+    y = y.astype(bool)
     p_live = np.asarray(cv["scores"]["bec_final_recipe_cv"], dtype=float)
     p_raw = np.asarray(cv["scores"]["roberta_cv"], dtype=float)
     p_roberta = calibrated(p_raw, calibration["temperature"])
     amber = calibration["operating_points_development"]["amber_equal_live_false_alarms"]["threshold"]
     red = calibration["operating_points_development"]["red_equal_live_false_alarms"]["threshold"]
 
-    live = block(p_live, y.astype(bool), 0.62, 0.80)
-    roberta = block(p_roberta, y.astype(bool), amber, red)
+    live = block(p_live, y, 0.62, 0.80)
+    roberta = block(p_roberta, y, amber, red)
+
+    live_amber_budget = int(((p_live >= 0.62) & ~y).sum())
+    live_red_budget = int(((p_live >= 0.80) & ~y).sum())
+    matched_live_amber = at_false_alarm_budget(p_live, y, live_amber_budget)
+    matched_live_red = at_false_alarm_budget(p_live, y, live_red_budget)
+    matched_roberta_amber = at_false_alarm_budget(p_roberta, y, live_amber_budget)
+    matched_roberta_red = at_false_alarm_budget(p_roberta, y, live_red_budget)
+    live_zero = at_false_alarm_budget(p_live, y, 0)
+    roberta_zero = at_false_alarm_budget(p_roberta, y, 0)
+
     live_amber = p_live >= 0.62
     live_red = p_live >= 0.80
     roberta_amber = p_roberta >= amber
     roberta_red = p_roberta >= red
+    live_matched_amber = p_live >= matched_live_amber["threshold"]
+    live_matched_red = p_live >= matched_live_red["threshold"]
+    roberta_matched_amber = p_roberta >= matched_roberta_amber["threshold"]
+    roberta_matched_red = p_roberta >= matched_roberta_red["threshold"]
+    live_zero_flag = p_live >= live_zero["threshold"]
+    roberta_zero_flag = p_roberta >= roberta_zero["threshold"]
 
     out = {
         "dataset": cv["dataset"],
@@ -108,15 +135,35 @@ def main():
             "amber_threshold": amber,
             "red_threshold": red,
         },
-        "models": {
+        "fixed_live_thresholds": {
             "bec_final_recipe": live,
             "roberta_calibrated": roberta,
         },
-        "comparison_amber": compare(roberta_amber, live_amber, y.astype(bool), "roberta calibrated vs live, amber"),
-        "comparison_red": compare(roberta_red, live_red, y.astype(bool), "roberta calibrated vs live, red"),
-        "by_type": {
-            "bec_final_recipe": by_type(p_live, y.astype(bool), types, 0.62, 0.80),
-            "roberta_calibrated": by_type(p_roberta, y.astype(bool), types, amber, red),
+        "matched_false_alarms": {
+            "amber": {
+                "budget": live_amber_budget,
+                "live_recipe": matched_live_amber,
+                "roberta": matched_roberta_amber,
+            },
+            "red": {
+                "budget": live_red_budget,
+                "live_recipe": matched_live_red,
+                "roberta": matched_roberta_red,
+            },
+            "red_zero": {
+                "budget": 0,
+                "live_recipe": live_zero,
+                "roberta": roberta_zero,
+            },
+        },
+        "comparison_fixed_amber": compare(roberta_amber, live_amber, y, "roberta calibrated vs live at 0.62/0.80, amber"),
+        "comparison_fixed_red": compare(roberta_red, live_red, y, "roberta calibrated vs live at 0.62/0.80, red"),
+        "comparison_matched_amber": compare(roberta_matched_amber, live_matched_amber, y, "roberta calibrated vs live at equal amber false alarms"),
+        "comparison_matched_red": compare(roberta_matched_red, live_matched_red, y, "roberta calibrated vs live at equal red false alarms"),
+        "comparison_matched_red_zero": compare(roberta_zero_flag, live_zero_flag, y, "roberta calibrated vs live at zero red false alarms"),
+        "by_type_matched": {
+            "bec_final_recipe": by_type(p_live, y, types, matched_live_amber["threshold"], matched_live_red["threshold"]),
+            "roberta_calibrated": by_type(p_roberta, y, types, matched_roberta_amber["threshold"], matched_roberta_red["threshold"]),
         },
         "caveats": [
             "OOF development comparison, not a fresh holdout.",
@@ -127,7 +174,7 @@ def main():
         ],
     }
     json.dump(out, open(OUT, "w", encoding="utf-8"), indent=1)
-    print(json.dumps({k: out[k] for k in ("models", "comparison_amber", "comparison_red", "calibration")}, indent=1))
+    print(json.dumps({k: out[k] for k in ("matched_false_alarms", "comparison_matched_amber", "comparison_matched_red", "comparison_matched_red_zero")}, indent=1))
     print("wrote", OUT)
 
 
